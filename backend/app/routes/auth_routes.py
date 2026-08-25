@@ -5,6 +5,7 @@ from app.models.user import User
 from app.schemas.user_schema import UserCreate, UserResponse, UserLogin, Token
 from app.database.hashing import hash_password, verify_password
 from app.database.jwt_handler import create_access_token
+from app.database.auth_dependency import get_current_user, require_role
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -40,3 +41,11 @@ def login_user(credentials: UserLogin, db: Session = Depends(get_db)):
 
     access_token = create_access_token(data={"sub": user.email, "role": user.role})
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+@router.get("/admin-only")
+def admin_only_route(current_user: User = Depends(require_role(["admin"]))):
+    return {"message": f"Welcome admin {current_user.name}"}
