@@ -2,35 +2,34 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await api.post("/auth/login", { email, password });
-      const token = res.data.access_token;
+  e.preventDefault();
+  setLoading(true);
+  try {
+    const res = await api.post("/auth/login", { email, password });
+    const token = res.data.access_token;
 
-      const profileRes = await api.get("/auth/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    localStorage.setItem("token", token);
 
-      login(profileRes.data, token);
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.detail || "Login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const profileRes = await api.get("/auth/profile");
+
+    login(profileRes.data, token);
+    navigate("/dashboard");
+  } catch (err) {
+  toast.error(err.response?.data?.detail || "Login failed");
+} finally {
+  setLoading(false);
+}
+};
 
   return (
     <div className="auth-page">
@@ -39,7 +38,6 @@ function Login() {
         <h2 className="auth-title">Welcome back</h2>
         <p className="auth-subtitle">Log in to manage your alarms</p>
 
-        {error && <div className="error-box">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">

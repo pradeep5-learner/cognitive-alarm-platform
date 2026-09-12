@@ -1,8 +1,21 @@
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
+import { getAlarms } from "../services/alarmService";
 
 function Dashboard() {
   const { user } = useAuth();
+  const [totalAlarms, setTotalAlarms] = useState(0);
+  const [activeAlarms, setActiveAlarms] = useState(0);
+
+  useEffect(() => {
+    const loadStats = async () => {
+      const res = await getAlarms();
+      setTotalAlarms(res.data.length);
+      setActiveAlarms(res.data.filter((a) => a.is_active).length);
+    };
+    loadStats();
+  }, []);
 
   return (
     <div className="dashboard-page">
@@ -15,8 +28,12 @@ function Dashboard() {
 
         <div className="card-grid">
           <div className="info-card">
-            <div className="info-card-label">Email</div>
-            <div className="info-card-value" style={{ fontSize: 15 }}>{user?.email}</div>
+            <div className="info-card-label">Total Alarms</div>
+            <div className="info-card-value">{totalAlarms}</div>
+          </div>
+          <div className="info-card">
+            <div className="info-card-label">Active Alarms</div>
+            <div className="info-card-value">{activeAlarms}</div>
           </div>
           <div className="info-card">
             <div className="info-card-label">Role</div>

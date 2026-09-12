@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
 
 function Profile() {
-  const { user, login } = useAuth();
+  const { login } = useAuth();
   const [form, setForm] = useState({
     preferred_wake_time: "",
     sleep_duration_hours: "",
@@ -13,8 +14,6 @@ function Profile() {
     difficulty_preference: "medium",
     habit_preferences: "",
   });
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -38,20 +37,18 @@ function Profile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setMessage("");
     try {
-      const payload = {
-        ...form,
-        preferred_wake_time: form.preferred_wake_time ? form.preferred_wake_time + ":00" : null,
-        sleep_duration_hours: form.sleep_duration_hours ? parseFloat(form.sleep_duration_hours) : null,
-      };
-      const res = await api.put("/auth/profile", payload);
-      login(res.data, localStorage.getItem("token"));
-      setMessage("Profile updated successfully!");
-    } catch (err) {
-      setError(err.response?.data?.detail || "Update failed");
-    }
+  const payload = {
+    ...form,
+    preferred_wake_time: form.preferred_wake_time ? form.preferred_wake_time + ":00" : null,
+    sleep_duration_hours: form.sleep_duration_hours ? parseFloat(form.sleep_duration_hours) : null,
+  };
+  const res = await api.put("/auth/profile", payload);
+  login(res.data, localStorage.getItem("token"));
+  toast.success("Profile updated successfully!");
+} catch (err) {
+  toast.error(err.response?.data?.detail || "Update failed");
+}
   };
 
   return (
@@ -63,8 +60,6 @@ function Profile() {
           <p className="dashboard-subtitle">Update your wake-up and habit preferences</p>
         </div>
 
-        {message && <div className="success-box">{message}</div>}
-        {error && <div className="error-box">{error}</div>}
 
         <form className="profile-form" onSubmit={handleSubmit}>
           <div className="form-group">

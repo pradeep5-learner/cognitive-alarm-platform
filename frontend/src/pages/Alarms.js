@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { getAlarms, createAlarm, updateAlarm, deleteAlarm } from "../services/alarmService";
+import { formatTime } from "../utils/formatTime";
+import { toast } from "react-toastify";
 
 function Alarms() {
   const [alarms, setAlarms] = useState([]);
@@ -8,16 +10,15 @@ function Alarms() {
   const [time, setTime] = useState("");
   const [alarmType, setAlarmType] = useState("daily");
   const [editingId, setEditingId] = useState(null);
-  const [error, setError] = useState("");
 
   const loadAlarms = async () => {
-    try {
-      const res = await getAlarms();
-      setAlarms(res.data);
-    } catch (err) {
-      setError("Could not load alarms");
-    }
-  };
+  try {
+    const res = await getAlarms();
+    setAlarms(res.data);
+  } catch (err) {
+    toast.error("Could not load alarms");
+  }
+};
 
   useEffect(() => {
     loadAlarms();
@@ -31,21 +32,22 @@ function Alarms() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const payload = { label, time: time + ":00", alarm_type: alarmType };
-      if (editingId) {
-        await updateAlarm(editingId, payload);
-      } else {
-        await createAlarm(payload);
-      }
-      resetForm();
-      loadAlarms();
-    } catch (err) {
-      setError(err.response?.data?.detail || "Something went wrong");
+  e.preventDefault();
+  try {
+    const payload = { label, time: time + ":00", alarm_type: alarmType };
+    if (editingId) {
+      await updateAlarm(editingId, payload);
+      toast.success("Alarm updated!");
+    } else {
+      await createAlarm(payload);
+      toast.success("Alarm created!");
     }
-  };
+    resetForm();
+    loadAlarms();
+  } catch (err) {
+    toast.error(err.response?.data?.detail || "Something went wrong");
+  }
+};
 
   const handleEdit = (alarm) => {
     setEditingId(alarm.id);
@@ -55,10 +57,25 @@ function Alarms() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this alarm?")) return;
+  if (!window.confirm("Delete this alarm?")) return;
+  try {
     await deleteAlarm(id);
+    toast.success("Alarm deleted");
     loadAlarms();
-  };
+  } catch (err) {
+    toast.error("Could not delete alarm");
+  }
+};
+
+const handleToggleActive = async (alarm) => {
+  try {
+    await updateAlarm(alarm.id, { is_active: !alarm.is_active });
+    toast.success(alarm.is_active ? "Alarm turned off" : "Alarm turned on");
+    loadAlarms();
+  } catch (err) {
+    toast.error("Could not update alarm status");
+  }
+};
 
   return (
     <div className="dashboard-page">
@@ -110,26 +127,35 @@ function Alarms() {
           )}
         </form>
 
-        {error && <div className="error-box">{error}</div>}
 
         <div className="alarm-list">
           {alarms.length === 0 && (
             <p className="dashboard-subtitle">No alarms yet — add your first one above.</p>
           )}
           {alarms.map((alarm) => (
-            <div className="alarm-item" key={alarm.id}>
-              <div>
-                <div className="alarm-time">{alarm.time.slice(0, 5)}</div>
-                <div className="alarm-meta">
-                  {alarm.label} · <span className="alarm-type-badge">{alarm.alarm_type}</span>
-                </div>
-              </div>
-              <div className="alarm-actions">
-                <button className="btn-edit" onClick={() => handleEdit(alarm)}>Edit</button>
-                <button className="btn-delete" onClick={() => handleDelete(alarm.id)}>Delete</button>
-              </div>
-            </div>
-          ))}
+  <div className={`alarm-item ${!alarm.is_active ? "alarm-inactive" : ""}`} key={alarm.id}>
+    <div className="alarm-item-left">
+      <label className="toggle-switch">
+        <input
+          type="checkbox"
+          checked={alarm.is_active}
+          onChange={() => handleToggleActive(alarm)}
+        />
+        <span className="toggle-slider"></span>
+      </label>
+      <div>
+        <div className="alarm-time">{formatTime(alarm.time)}</div>
+        <div className="alarm-meta">
+          {alarm.label} · <span className="alarm-type-badge">{alarm.alarm_type}</span>
+        </div>
+      </div>
+    </div>
+    <div className="alarm-actions">
+      <button className="btn-edit" onClick={() => handleEdit(alarm)}>Edit</button>
+      <button className="btn-delete" onClick={() => handleDelete(alarm.id)}>Delete</button>
+    </div>
+  </div>
+))}
         </div>
       </div>
     </div>

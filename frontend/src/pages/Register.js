@@ -1,24 +1,23 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
+import { toast } from "react-toastify";
 
 function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
     try {
       await api.post("/auth/register", { name, email, password });
       navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.detail || "Registration failed");
+      toast.error(err.response?.data?.detail || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -30,8 +29,6 @@ function Register() {
         <div className="auth-logo">⏰</div>
         <h2 className="auth-title">Create your account</h2>
         <p className="auth-subtitle">Start building better wake-up habits</p>
-
-        {error && <div className="error-box">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
