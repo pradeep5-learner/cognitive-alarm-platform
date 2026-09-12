@@ -3,6 +3,8 @@ import Navbar from "../components/Navbar";
 import { getAlarms, createAlarm, updateAlarm, deleteAlarm } from "../services/alarmService";
 import { formatTime } from "../utils/formatTime";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
 
 function Alarms() {
   const [alarms, setAlarms] = useState([]);
@@ -10,6 +12,7 @@ function Alarms() {
   const [time, setTime] = useState("");
   const [alarmType, setAlarmType] = useState("daily");
   const [editingId, setEditingId] = useState(null);
+  const navigate = useNavigate();
 
   const loadAlarms = async () => {
   try {
@@ -151,6 +154,7 @@ const handleToggleActive = async (alarm) => {
       </div>
     </div>
     <div className="alarm-actions">
+      <button className="btn-ring" onClick={() => navigate(`/alarm-ring/${alarm.id}`)}>Ring Now</button>
       <button className="btn-edit" onClick={() => handleEdit(alarm)}>Edit</button>
       <button className="btn-delete" onClick={() => handleDelete(alarm.id)}>Delete</button>
     </div>

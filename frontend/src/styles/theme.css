@@ -440,3 +440,130 @@ body {
   align-items: center;
   gap: 16px;
 }
+
+.ring-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1E1B4B, #4338CA);
+  padding: 20px;
+}
+
+.ring-loading {
+  color: white;
+  font-size: 16px;
+}
+
+.ring-card {
+  background: white;
+  width: 100%;
+  max-width: 440px;
+  padding: 40px 36px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  text-align: center;
+}
+
+.ring-time {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.ring-badge {
+  display: inline-block;
+  background: #EEF2FF;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: capitalize;
+  margin-bottom: 18px;
+}
+
+.ring-question {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0 0 24px 0;
+  line-height: 1.4;
+}
+
+.ring-input {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+.ring-attempts {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.btn-snooze {
+  width: 100%;
+  margin-top: 12px;
+  padding: 11px;
+  background: #F3F4F6;
+  color: var(--text-muted);
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-snooze:hover {
+  background: #E5E7EB;
+}
+
+.ring-success {
+  padding: 50px 36px;
+}
+
+.ring-success-icon {
+  font-size: 52px;
+  margin-bottom: 12px;
+}
+
+.ring-success h2 {
+  color: var(--text-dark);
+  margin: 0 0 8px 0;
+}
+
+.ring-success p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.ring-shake {
+  animation: shake 0.4s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.btn-ring {
+  background: #FEF3C7;
+  color: #92400E;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-ring:hover {
+  background: #FDE68A;
+}
