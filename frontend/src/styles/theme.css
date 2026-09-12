@@ -567,3 +567,10 @@ body {
 .btn-ring:hover {
   background: #FDE68A;
 }
+
+.section-heading {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 32px 0 14px 0;
+}
