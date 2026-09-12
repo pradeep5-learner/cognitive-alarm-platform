@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.connection import Base, engine
-from app.models import user, alarm
-from app.routes import auth_routes, alarm_routes
+from app.routes import auth_routes, alarm_routes, challenge_routes, wakeup_routes
+from app.models import user, alarm, challenge, wakeup_log
 
 Base.metadata.create_all(bind=engine)
 
@@ -18,6 +18,8 @@ app.add_middleware(
 
 app.include_router(auth_routes.router)
 app.include_router(alarm_routes.router)
+app.include_router(challenge_routes.router)
+app.include_router(wakeup_routes.router)
 
 @app.get("/")
 def read_root():
