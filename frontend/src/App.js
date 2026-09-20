@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Alarms from "./pages/Alarms";
 import Profile from "./pages/Profile";
 import AlarmRing from "./pages/AlarmRing";
+import Admin from "./pages/Admin";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/login" />} />
           <Route path="/alarm-ring/:alarmId" element={<ProtectedRoute><AlarmRing /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

@@ -12,5 +12,7 @@ class WakeUpLog(Base):
     is_verified = Column(Boolean, default=False)
     attempts = Column(Integer, default=0)
     snooze_count = Column(Integer, default=0)
+    correct_streak = Column(Integer, default=0)
+    required_streak = Column(Integer, default=2)
     started_at = Column(DateTime(timezone=True), server_default=func.now())
     verified_at = Column(DateTime(timezone=True), nullable=True)

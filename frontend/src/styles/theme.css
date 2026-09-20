@@ -574,3 +574,99 @@ body {
   color: var(--text-dark);
   margin: 32px 0 14px 0;
 }
+
+.streak-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.streak-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #E5E7EB;
+  transition: background 0.2s;
+}
+
+.streak-dot-filled {
+  background: #16A34A;
+}
+
+.streak-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+.timer-bar-track {
+  width: 100%;
+  height: 6px;
+  background: #E5E7EB;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.timer-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 1s linear;
+}
+
+.timer-bar-low {
+  background: #DC2626;
+}
+
+.timer-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.timer-text-low {
+  color: #DC2626;
+  font-weight: 700;
+}
+
+.admin-table {
+  background: var(--white);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+.admin-table-header {
+  display: grid;
+  grid-template-columns: 1.2fr 1.8fr 1fr;
+  padding: 14px 22px;
+  background: #F9FAFB;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.admin-table-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.8fr 1fr;
+  padding: 16px 22px;
+  border-top: 1px solid var(--border);
+  align-items: center;
+  font-size: 14px;
+  color: var(--text-dark);
+}
+
+.admin-table-email {
+  color: var(--text-muted);
+  font-size: 13.5px;
+}
+
+.admin-role-select {
+  width: auto;
+  padding: 6px 10px;
+  font-size: 13px;
+}
