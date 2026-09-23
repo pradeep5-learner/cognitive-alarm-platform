@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Time, Float
+from sqlalchemy import Column, Integer, String, DateTime, Time, Float, ForeignKey
 from sqlalchemy.sql import func
 from app.database.connection import Base
 
@@ -10,6 +10,8 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(String, default="user")
+
+    coach_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     # Profile fields
     preferred_wake_time = Column(Time, nullable=True)

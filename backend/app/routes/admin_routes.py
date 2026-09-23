@@ -60,3 +60,20 @@ def get_platform_stats(db: Session = Depends(get_db), current_user: User = Depen
         "total_wakeup_sessions": total_sessions,
         "platform_completion_rate": round(completion_rate, 1)
     }
+
+from app.schemas.admin_schema import CoachAssignRequest
+
+@router.put("/users/{user_id}/assign-coach", response_model=UserListItem)
+def assign_coach(user_id: int, request: CoachAssignRequest, db: Session = Depends(get_db), current_user: User = Depends(require_role(["admin"]))):
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    coach = db.query(User).filter(User.id == request.coach_id, User.role == "wellness_coach").first()
+    if not coach:
+        raise HTTPException(status_code=400, detail="Selected user is not a valid wellness coach")
+
+    target_user.coach_id = coach.id
+    db.commit()
+    db.refresh(target_user)
+    return target_user

@@ -640,7 +640,7 @@ body {
 
 .admin-table-header {
   display: grid;
-  grid-template-columns: 1.2fr 1.8fr 1fr;
+  grid-template-columns: 1fr 1.5fr 0.8fr 1fr;
   padding: 14px 22px;
   background: #F9FAFB;
   font-size: 12px;
@@ -669,4 +669,65 @@ body {
   width: auto;
   padding: 6px 10px;
   font-size: 13px;
+}
+
+.coach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.coach-user-card {
+  background: var(--white);
+  padding: 22px;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.coach-user-header {
+  margin-bottom: 16px;
+}
+
+.coach-user-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.coach-user-email {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.coach-user-stats {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.coach-stat {
+  text-align: center;
+}
+
+.coach-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+
+.coach-stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.coach-user-difficulty {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: capitalize;
 }

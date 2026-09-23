@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
-import { getAllUsers, updateUserRole, getPlatformStats } from "../services/adminService";
+import { getAllUsers, updateUserRole, getPlatformStats, assignCoach } from "../services/adminService";
 
 function Admin() {
   const { user: currentUser } = useAuth();
@@ -40,6 +40,17 @@ function Admin() {
       toast.error(err.response?.data?.detail || "Could not update role");
     }
   };
+
+  const handleAssignCoach = async (userId, coachId) => {
+  if (!coachId) return;
+  try {
+    await assignCoach(userId, parseInt(coachId));
+    toast.success("Coach assigned");
+    loadData();
+  } catch (err) {
+    toast.error(err.response?.data?.detail || "Could not assign coach");
+  }
+};
 
   if (loading) {
     return (
@@ -86,6 +97,7 @@ function Admin() {
             <div>Name</div>
             <div>Email</div>
             <div>Role</div>
+            <div>Coach</div>
           </div>
           {users.map((u) => (
             <div className="admin-table-row" key={u.id}>
@@ -106,6 +118,22 @@ function Admin() {
                   </select>
                 )}
               </div>
+              <div>
+        {u.role === "wellness_coach" || u.id === currentUser?.id ? (
+          <span style={{ color: "var(--text-muted)", fontSize: 13 }}>—</span>
+        ) : (
+          <select
+            className="form-input admin-role-select"
+            value={u.coach_id || ""}
+            onChange={(e) => handleAssignCoach(u.id, e.target.value)}
+          >
+            <option value="">No coach</option>
+            {users.filter((coach) => coach.role === "wellness_coach").map((coach) => (
+              <option key={coach.id} value={coach.id}>{coach.name}</option>
+            ))}
+          </select>
+        )}
+      </div>
             </div>
           ))}
         </div>

@@ -17,6 +17,7 @@ function Navbar() {
   <Link to="/dashboard">Dashboard</Link>
   <Link to="/alarms">Alarms</Link>
   <Link to="/profile">Profile</Link>
+  {user?.role === "wellness_coach" && <Link to="/coach-dashboard">My Users</Link>}
   {user?.role === "admin" && <Link to="/admin">Admin</Link>}
 </div>
       <div className="navbar-right">
