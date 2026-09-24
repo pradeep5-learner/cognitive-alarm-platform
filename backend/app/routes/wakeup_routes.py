@@ -103,7 +103,7 @@ def submit_wakeup_answer(submission: WakeUpSubmitRequest, db: Session = Depends(
 
     if fully_dismissed:
         log.is_verified = True
-        log.verified_at = datetime.utcnow()
+        log.verified_at = datetime.now()
 
     db.commit()
 
