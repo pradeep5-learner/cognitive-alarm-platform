@@ -79,9 +79,16 @@ def get_recommended_difficulty(db, user_id, fallback_difficulty="medium"):
             response_times.append(delta)
         avg_response_time = sum(response_times) / len(response_times) if response_times else 30
 
-    total_logs = db.query(WakeUpLog).filter(WakeUpLog.user_id == user_id).count()
-    verified_count = db.query(WakeUpLog).filter(WakeUpLog.user_id == user_id, WakeUpLog.is_verified == True).count()
-    completion_rate = (verified_count / total_logs * 100) if total_logs > 0 else 50
+        recent_all_logs = (
+            db.query(WakeUpLog)
+            .filter(WakeUpLog.user_id == user_id)
+            .order_by(WakeUpLog.started_at.desc())
+            .limit(20)
+            .all()
+        )
+        recent_verified_count = len([log for log in recent_all_logs if log.is_verified])
+        completion_rate = (recent_verified_count / len(recent_all_logs) * 100) if recent_all_logs else 50
+    
 
     predicted_difficulty, confidence = predict_difficulty(
         avg_attempts=avg_attempts,
