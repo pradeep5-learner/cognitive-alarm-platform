@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database.connection import Base, engine
-from app.routes import auth_routes, alarm_routes, challenge_routes, wakeup_routes, admin_routes, coach_routes, habit_routes, behavior_routes, difficulty_routes
+from app.routes import auth_routes, alarm_routes, challenge_routes, wakeup_routes, admin_routes, coach_routes, habit_routes, behavior_routes, difficulty_routes, recommendation_routes
 from app.models import user, alarm, challenge, wakeup_log, habit_score
 
 Base.metadata.create_all(bind=engine)
@@ -25,6 +25,7 @@ app.include_router(coach_routes.router)
 app.include_router(habit_routes.router)
 app.include_router(behavior_routes.router)
 app.include_router(difficulty_routes.router)
+app.include_router(recommendation_routes.router)
 
 @app.get("/")
 def read_root():
