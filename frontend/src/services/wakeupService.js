@@ -1,6 +1,9 @@
 import api from "./api";
 
-export const startWakeUp = (alarmId) => api.post(`/wakeup/start/${alarmId}`);
+export const startWakeUp = (alarmId, continueFrom = null) => {
+  const params = continueFrom ? { continue_from: continueFrom } : {};
+  return api.post(`/wakeup/start/${alarmId}`, null, { params });
+};
 export const submitWakeUpAnswer = (wakeupLogId, submittedAnswer) =>
   api.post("/wakeup/submit", { wakeup_log_id: wakeupLogId, submitted_answer: submittedAnswer });
 export const snoozeWakeUp = (wakeupLogId) =>

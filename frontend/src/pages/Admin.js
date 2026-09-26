@@ -7,9 +7,6 @@ import { getAllUsers, updateUserRole, getPlatformStats, assignCoach } from "../s
 
 function Admin() {
   const { user: currentUser } = useAuth();
-  if (currentUser && currentUser.role !== "admin") {
-  return <Navigate to="/dashboard" />;
-  }
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,6 +27,10 @@ function Admin() {
   useEffect(() => {
     loadData();
   }, []);
+
+  if (currentUser && currentUser.role !== "admin") {
+  return <Navigate to="/dashboard" />;
+  }
 
   const handleRoleChange = async (userId, newRole) => {
     try {

@@ -21,7 +21,7 @@ function AlarmRing() {
 
   const handleTimeoutRef = useRef();
 
-  const beginSession = useCallback(async () => {
+  const beginSession = useCallback(async (continueFromId = null) => {
     const myTicket = ++sessionTicketRef.current;
 
     setLoading(true);
@@ -31,7 +31,7 @@ function AlarmRing() {
     }
 
     try {
-      const res = await startWakeUp(alarmId);
+      const res = await startWakeUp(alarmId, continueFromId);
 
       if (myTicket !== sessionTicketRef.current) {
         return;
@@ -73,7 +73,7 @@ function AlarmRing() {
       await timeoutWakeUp(logId);
       toast.error("Time's up! Streak reset.");
       setAnswer("");
-      beginSession();
+      beginSession(logId);
     } catch (err) {
       toast.error("Something went wrong");
     }
@@ -105,7 +105,7 @@ function AlarmRing() {
         toast.success("Alarm dismissed — you're fully awake! 🎉");
       } else if (res.data.is_correct) {
         toast.success(`Correct! Streak: ${res.data.correct_streak}/${res.data.required_streak} — one more!`);
-        beginSession();
+        beginSession(session.wakeup_log_id);
       } else {
         setWrongShake(true);
         toast.error("Not quite — streak reset, try again");
@@ -122,7 +122,7 @@ function AlarmRing() {
       const res = await snoozeWakeUp(session.wakeup_log_id);
       setSnoozeCount(res.data.snooze_count);
       toast.info("Snoozed — a new challenge will appear");
-      beginSession();
+      beginSession(session.wakeup_log_id);
     } catch (err) {
       toast.error("Could not snooze");
     }

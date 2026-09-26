@@ -7,11 +7,6 @@ import { getMyAssignedUsers } from "../services/coachService";
 
 function CoachDashboard() {
   const { user: currentUser } = useAuth();
-
-  if (currentUser && currentUser.role !== "wellness_coach") {
-    return <Navigate to="/dashboard" />;
-  }
-
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,6 +23,10 @@ function CoachDashboard() {
     };
     loadUsers();
   }, []);
+
+  if (currentUser && currentUser.role !== "wellness_coach") {
+    return <Navigate to="/dashboard" />;
+  }
 
   if (loading) {
     return (
