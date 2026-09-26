@@ -14,12 +14,13 @@ function Navbar() {
     <nav className="navbar">
       <div className="navbar-logo">⏰ Cognitive Alarm</div>
       <div className="navbar-links">
-  <Link to="/dashboard">Dashboard</Link>
-  <Link to="/alarms">Alarms</Link>
-  <Link to="/profile">Profile</Link>
-  {user?.role === "wellness_coach" && <Link to="/coach-dashboard">My Users</Link>}
-  {user?.role === "admin" && <Link to="/admin">Admin</Link>}
-</div>
+        <Link to="/dashboard">Dashboard</Link>
+        <Link to="/alarms">Alarms</Link>
+        <Link to="/insights">Insights</Link>
+        <Link to="/profile">Profile</Link>
+        {user?.role === "wellness_coach" && <Link to="/coach-dashboard">My Users</Link>}
+        {user?.role === "admin" && <Link to="/admin">Admin</Link>}
+      </div>      
       <div className="navbar-right">
         <span className="navbar-user">
           {user?.name} <span className="role-badge">{user?.role}</span>

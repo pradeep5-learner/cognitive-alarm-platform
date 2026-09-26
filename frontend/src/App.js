@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import AlarmRing from "./pages/AlarmRing";
 import Admin from "./pages/Admin";
 import CoachDashboard from "./pages/CoachDashboard";
+import HabitInsights from "./pages/HabitInsights";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="*" element={<Navigate to="/login" />} />
           <Route path="/alarm-ring/:alarmId" element={<ProtectedRoute><AlarmRing /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+          <Route path="/insights" element={<ProtectedRoute><HabitInsights /></ProtectedRoute>} />
           <Route
   path="/coach-dashboard"
   element={<ProtectedRoute><CoachDashboard /></ProtectedRoute>}

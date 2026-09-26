@@ -731,3 +731,130 @@ body {
   color: var(--text-muted);
   text-transform: capitalize;
 }
+
+.habit-score-hero {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  background: var(--white);
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.habit-score-ring {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: conic-gradient(var(--primary) 0deg, var(--primary) calc(var(--pct, 0) * 3.6deg), #EEF2FF 0deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.habit-score-ring::before {
+  content: "";
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: white;
+  border-radius: 50%;
+}
+
+.habit-score-number {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--text-dark);
+  z-index: 1;
+}
+
+.habit-score-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  z-index: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.habit-score-breakdown {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.habit-score-bar-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 44px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--text-dark);
+}
+
+.habit-score-bar-track {
+  height: 8px;
+  background: #EEF2FF;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.habit-score-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 10px;
+  transition: width 0.4s ease;
+}
+
+.chart-card {
+  background: var(--white);
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  margin-bottom: 28px;
+}
+
+.recs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rec-card {
+  background: var(--white);
+  padding: 16px 20px;
+  border-radius: 12px;
+  border-left: 4px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.rec-high {
+  border-left-color: #DC2626;
+}
+
+.rec-medium {
+  border-left-color: #F97316;
+}
+
+.rec-low {
+  border-left-color: #16A34A;
+}
+
+.rec-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.rec-message {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
