@@ -17,6 +17,56 @@ function AlarmRing() {
   const [showMemorySequence, setShowMemorySequence] = useState(true);
   const [timeLeft, setTimeLeft] = useState(null);
   const timerRef = useRef(null);
+  const sessionTicketRef = useRef(0);
+
+  const handleTimeoutRef = useRef();
+
+  const beginSession = useCallback(async () => {
+    const myTicket = ++sessionTicketRef.current;
+
+    setLoading(true);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    try {
+      const res = await startWakeUp(alarmId);
+
+      if (myTicket !== sessionTicketRef.current) {
+        return;
+      }
+
+      setSession(res.data);
+      setAnswer("");
+      setShowMemorySequence(true);
+      setTimeLeft(res.data.time_limit_seconds);
+
+      if (res.data.challenge_type === "memory") {
+        setTimeout(() => setShowMemorySequence(false), 4000);
+      }
+
+      const newTimerId = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(newTimerId);
+            if (myTicket === sessionTicketRef.current) {
+              handleTimeoutRef.current(res.data.wakeup_log_id);
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      timerRef.current = newTimerId;
+    } catch (err) {
+      toast.error("Could not start alarm challenge");
+    } finally {
+      if (myTicket === sessionTicketRef.current) {
+        setLoading(false);
+      }
+    }
+  }, [alarmId]);
 
   const handleTimeout = useCallback(async (logId) => {
     try {
@@ -27,45 +77,21 @@ function AlarmRing() {
     } catch (err) {
       toast.error("Something went wrong");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const beginSession = async () => {
-    setLoading(true);
-    clearInterval(timerRef.current);
-    try {
-      const res = await startWakeUp(alarmId);
-      setSession(res.data);
-      setAnswer("");
-      setShowMemorySequence(true);
-      setTimeLeft(res.data.time_limit_seconds);
-
-      if (res.data.challenge_type === "memory") {
-        setTimeout(() => setShowMemorySequence(false), 4000);
-      }
-
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current);
-            handleTimeout(res.data.wakeup_log_id);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } catch (err) {
-      toast.error("Could not start alarm challenge");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [beginSession]);
 
   useEffect(() => {
-    beginSession();
-    return () => clearInterval(timerRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [alarmId]);
+    handleTimeoutRef.current = handleTimeout;
+  }, [handleTimeout]);
+
+  useEffect(() => {
+  beginSession();
+  const cleanupTimer = timerRef;
+  return () => {
+    clearInterval(cleanupTimer.current);
+    sessionTicketRef.current += 1;
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [beginSession]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

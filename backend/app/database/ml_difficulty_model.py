@@ -70,12 +70,14 @@ def get_recommended_difficulty(db, user_id, fallback_difficulty="medium"):
 
     response_times = []
     for log in recent_logs:
+        if not log.verified_at or not log.started_at:
+            continue
         started_naive = log.started_at.replace(tzinfo=None) if log.started_at.tzinfo else log.started_at
         verified_naive = log.verified_at.replace(tzinfo=None) if log.verified_at.tzinfo else log.verified_at
         delta = (verified_naive - started_naive).total_seconds() / 60
         if delta >= 0:
             response_times.append(delta)
-    avg_response_time = sum(response_times) / len(response_times) if response_times else 30
+        avg_response_time = sum(response_times) / len(response_times) if response_times else 30
 
     total_logs = db.query(WakeUpLog).filter(WakeUpLog.user_id == user_id).count()
     verified_count = db.query(WakeUpLog).filter(WakeUpLog.user_id == user_id, WakeUpLog.is_verified == True).count()

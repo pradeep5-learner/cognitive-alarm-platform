@@ -35,14 +35,20 @@ def start_wakeup_verification(alarm_id: int, db: Session = Depends(get_db), curr
     if not alarm:
         raise HTTPException(status_code=404, detail="Alarm not found")
 
+    from datetime import timedelta
+
+    recent_cutoff = datetime.utcnow() - timedelta(minutes=2)
+
     existing_log = db.query(WakeUpLog).filter(
         WakeUpLog.alarm_id == alarm_id,
         WakeUpLog.user_id == current_user.id,
-        WakeUpLog.is_verified == False
+        WakeUpLog.is_verified == False,
+        WakeUpLog.correct_streak > 0,
+        WakeUpLog.started_at >= recent_cutoff
     ).order_by(WakeUpLog.started_at.desc()).first()
-
+    
     correct_streak = existing_log.correct_streak if existing_log else 0
-    required_streak = existing_log.required_streak if existing_log else 2
+    required_streak = existing_log.required_streak if existing_log else random.choice([1, 2])
 
     fallback = current_user.difficulty_preference or "medium"
     difficulty, confidence, is_ml = get_recommended_difficulty(db, current_user.id, fallback)
