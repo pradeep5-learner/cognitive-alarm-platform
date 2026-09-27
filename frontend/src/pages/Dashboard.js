@@ -3,12 +3,16 @@ import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import { getAlarms } from "../services/alarmService";
 import { getAnalytics } from "../services/wakeupService";
+import { getDifficultyPrediction } from "../services/habitService";
+
 
 function Dashboard() {
   const { user } = useAuth();
   const [totalAlarms, setTotalAlarms] = useState(0);
   const [activeAlarms, setActiveAlarms] = useState(0);
   const [analytics, setAnalytics] = useState(null);
+  const [aiDifficulty, setAiDifficulty] = useState(null);
+
 
   useEffect(() => {
     const loadStats = async () => {
@@ -21,6 +25,13 @@ function Dashboard() {
         setAnalytics(analyticsRes.data);
       } catch (err) {
         setAnalytics(null);
+      }
+
+      try {
+      const diffRes = await getDifficultyPrediction();
+      setAiDifficulty(diffRes.data);
+      } catch (err) {
+      setAiDifficulty(null);
       }
     };
     loadStats();
@@ -49,9 +60,24 @@ function Dashboard() {
             <div className="info-card-value">{user?.role}</div>
           </div>
           <div className="info-card">
-            <div className="info-card-label">Difficulty Preference</div>
             <div className="info-card-value">{user?.difficulty_preference || "Not set"}</div>
+            <div className="info-card-label">Profile Setting</div>
           </div>
+          {aiDifficulty && (
+            <div className="info-card">
+              <div className="info-card-label">
+                {aiDifficulty.is_ml_prediction ? "AI-Adjusted Difficulty" : "AI (needs more data)"}
+              </div>
+              <div className="info-card-value" style={{ textTransform: "capitalize" }}>
+                {aiDifficulty.recommended_difficulty}
+                {aiDifficulty.is_ml_prediction && (
+                  <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500, marginLeft: 6 }}>
+                    ({aiDifficulty.confidence}%)
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {analytics && analytics.total_sessions > 0 && (
