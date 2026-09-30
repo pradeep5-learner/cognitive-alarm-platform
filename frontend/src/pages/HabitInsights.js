@@ -9,6 +9,7 @@ import {
   getHabitScore, getHabitScoreHistory, getBehavioralAnalytics,
   getRecommendations, getDifficultyPrediction
 } from "../services/habitService";
+import { getProductivityCorrelation } from "../services/productivityService";
 
 function HabitInsights() {
   const [score, setScore] = useState(null);
@@ -17,16 +18,18 @@ function HabitInsights() {
   const [recommendations, setRecommendations] = useState([]);
   const [difficultyPred, setDifficultyPred] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [productivity, setProductivity] = useState(null);
 
   useEffect(() => {
     const loadAll = async () => {
       try {
-        const [scoreRes, historyRes, analyticsRes, recsRes, diffRes] = await Promise.all([
+        const [scoreRes, historyRes, analyticsRes, recsRes, diffRes, prodRes] = await Promise.all([
           getHabitScore(),
           getHabitScoreHistory(),
           getBehavioralAnalytics(),
           getRecommendations(),
           getDifficultyPrediction(),
+          getProductivityCorrelation(),
         ]);
         setScore(scoreRes.data);
         setHistory(
@@ -39,6 +42,7 @@ function HabitInsights() {
         setAnalytics(analyticsRes.data);
         setRecommendations(recsRes.data.recommendations);
         setDifficultyPred(diffRes.data);
+        setProductivity(prodRes.data);
       } catch (err) {
         toast.error("Could not load habit insights");
       } finally {
@@ -138,6 +142,31 @@ function HabitInsights() {
             </div>
           </>
         )}
+
+        {productivity && productivity.daily_points.length >= 3 && (
+  <>
+    <h2 className="section-heading">Wake-Up Quality vs. Productivity</h2>
+    <div className="chart-card">
+      <div className="correlation-summary">
+        <div>
+          <span className="correlation-value">{productivity.correlation}</span>
+          <span className="correlation-strength">{productivity.strength} correlation</span>
+        </div>
+        <p className="correlation-insight">{productivity.insight}</p>
+      </div>
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={productivity.daily_points}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#EEF2FF" />
+          <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+          <YAxis tick={{ fontSize: 12 }} />
+          <Tooltip />
+          <Line type="monotone" dataKey="wake_quality" stroke="#4F46E5" strokeWidth={2} dot={{ r: 2 }} name="Wake Quality" />
+          <Line type="monotone" dataKey="productivity" stroke="#F97316" strokeWidth={2} dot={{ r: 2 }} name="Productivity" />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  </>
+)}
 
         {difficultyPred && (
           <>

@@ -4,7 +4,8 @@ import Navbar from "../components/Navbar";
 import { getAlarms } from "../services/alarmService";
 import { getAnalytics } from "../services/wakeupService";
 import { getDifficultyPrediction } from "../services/habitService";
-
+import { logProductivity } from "../services/productivityService";
+import { toast } from "react-toastify";
 
 function Dashboard() {
   const { user } = useAuth();
@@ -12,7 +13,8 @@ function Dashboard() {
   const [activeAlarms, setActiveAlarms] = useState(0);
   const [analytics, setAnalytics] = useState(null);
   const [aiDifficulty, setAiDifficulty] = useState(null);
-
+  const [productivityRating, setProductivityRating] = useState(null);
+  const [savingRating, setSavingRating] = useState(false);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -36,6 +38,19 @@ function Dashboard() {
     };
     loadStats();
   }, []);
+
+  const handleRateProductivity = async (rating) => {
+    setSavingRating(true);
+    try {
+      await logProductivity(rating);
+      setProductivityRating(rating);
+      toast.success("Thanks! Today's productivity logged.");
+    } catch (err) {
+      toast.error("Could not save rating");
+    } finally {
+      setSavingRating(false);
+    }
+  };
 
   return (
     <div className="dashboard-page">
@@ -103,6 +118,27 @@ function Dashboard() {
             </div>
           </>
         )}
+        
+        <div className="productivity-widget">
+  <div className="productivity-widget-label">How productive was your day?</div>
+  <div className="productivity-scale">
+    {[1, 2, 3, 4, 5].map((n) => (
+      <button
+        key={n}
+        className={`productivity-btn ${productivityRating === n ? "productivity-btn-active" : ""}`}
+        onClick={() => handleRateProductivity(n)}
+        disabled={savingRating}
+      >
+        {n}
+      </button>
+    ))}
+  </div>
+  <div className="productivity-scale-labels">
+    <span>Low</span>
+    <span>High</span>
+  </div>
+</div>
+
 
         {user?.role === "admin" && (
           <div className="admin-panel">
