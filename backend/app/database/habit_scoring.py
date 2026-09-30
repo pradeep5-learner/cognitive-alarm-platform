@@ -81,12 +81,14 @@ def calculate_habit_score(db, user_id):
     challenge_completion = calculate_challenge_completion(db, user_id)
     snooze_reduction = calculate_snooze_reduction(db, user_id)
     sleep_adherence = calculate_sleep_adherence(db, user_id)
+    productivity = calculate_productivity_score(db, user_id)
 
     total = (
-        wake_consistency * 0.35 +
-        challenge_completion * 0.25 +
-        snooze_reduction * 0.20 +
-        sleep_adherence * 0.20
+        wake_consistency * 0.30 +
+        challenge_completion * 0.20 +
+        snooze_reduction * 0.15 +
+        sleep_adherence * 0.15 +
+        productivity * 0.20
     )
 
     return {
@@ -94,5 +96,24 @@ def calculate_habit_score(db, user_id):
         "challenge_completion_score": challenge_completion,
         "snooze_reduction_score": snooze_reduction,
         "sleep_adherence_score": sleep_adherence,
+        "productivity_score": productivity,
         "total_score": round(total, 1)
     }
+
+from app.models.productivity_log import ProductivityLog
+
+def calculate_productivity_score(db, user_id):
+    recent_logs = (
+        db.query(ProductivityLog)
+        .filter(ProductivityLog.user_id == user_id)
+        .order_by(ProductivityLog.log_date.desc())
+        .limit(14)
+        .all()
+    )
+
+    if not recent_logs:
+        return 50.0
+
+    avg_rating = sum(log.rating for log in recent_logs) / len(recent_logs)
+    score = (avg_rating / 5) * 100
+    return round(score, 1)

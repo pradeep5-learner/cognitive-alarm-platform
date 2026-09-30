@@ -6,6 +6,7 @@ class HabitScoreResponse(BaseModel):
     challenge_completion_score: float
     snooze_reduction_score: float
     sleep_adherence_score: float
+    productivity_score: float
     total_score: float
 
 class HabitScoreHistoryItem(BaseModel):

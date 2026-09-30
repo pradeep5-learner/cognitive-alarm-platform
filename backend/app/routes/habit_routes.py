@@ -28,6 +28,7 @@ def get_habit_score(db: Session = Depends(get_db), current_user: User = Depends(
         challenge_completion_score=scores["challenge_completion_score"],
         snooze_reduction_score=scores["snooze_reduction_score"],
         sleep_adherence_score=scores["sleep_adherence_score"],
+        productivity_score=scores["productivity_score"],
         total_score=scores["total_score"]
     )
     db.add(log_entry)

@@ -11,5 +11,6 @@ class HabitScoreLog(Base):
     challenge_completion_score = Column(Float, default=0.0)
     snooze_reduction_score = Column(Float, default=0.0)
     sleep_adherence_score = Column(Float, default=0.0)
+    productivity_score = Column(Float, default=0.0)
     total_score = Column(Float, default=0.0)
     calculated_at = Column(DateTime(timezone=True), server_default=func.now())
