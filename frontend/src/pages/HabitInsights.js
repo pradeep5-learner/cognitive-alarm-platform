@@ -105,6 +105,13 @@ function HabitInsights() {
                 </div>
                 <span>{score.sleep_adherence_score}%</span>
               </div>
+              <div className="habit-score-bar-row">
+                <span>Productivity</span>
+                <div className="habit-score-bar-track">
+                  <div className="habit-score-bar-fill" style={{ width: `${score.productivity_score}%` }} />
+                </div>
+                <span>{score.productivity_score}%</span>
+              </div>
             </div>
           </div>
         )}

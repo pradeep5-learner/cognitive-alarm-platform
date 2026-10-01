@@ -2,7 +2,7 @@ from app.database.behavioral_analytics import calculate_behavioral_analytics
 from app.database.habit_scoring import calculate_habit_score
 from app.models.user import User
 from app.models.wakeup_log import WakeUpLog
-
+from app.database.productivity_analysis import calculate_productivity_correlation
 
 def generate_recommendations(db, user_id):
     recommendations = []
@@ -12,6 +12,7 @@ def generate_recommendations(db, user_id):
     scores = calculate_habit_score(db, user_id)
 
     logs = db.query(WakeUpLog).filter(WakeUpLog.user_id == user_id).all()
+    correlation_data = calculate_productivity_correlation(db, user_id)
 
     if len(logs) < 3:
         recommendations.append({
@@ -69,6 +70,30 @@ def generate_recommendations(db, user_id):
             "title": "Wake-up time drifting from your goal",
             "message": "Your actual wake-up times are often far from your preferred wake-up time in your profile. Consider adjusting your alarm or your goal to be more realistic.",
             "priority": "medium"
+        })
+
+    if scores["productivity_score"] < 50 and len(correlation_data["daily_points"]) >= 3:
+        recommendations.append({
+        "category": "productivity",
+        "title": "Your productivity ratings have been low",
+        "message": "Your recent self-reported productivity is below average. Check whether your wake-up consistency is part of the pattern.",
+        "priority": "medium"
+    })
+
+    if correlation_data["correlation"] is not None and correlation_data["correlation"] >= 0.5:
+        recommendations.append({
+            "category": "productivity",
+            "title": "Your wake-up habits are paying off",
+            "message": f"There's a {correlation_data['strength']} link between clean wake-ups and your productivity. Keep prioritizing consistent alarms.",
+            "priority": "low"
+        })
+
+    if correlation_data["days_analyzed"] < 3:
+        recommendations.append({
+            "category": "productivity",
+            "title": "Log your productivity daily",
+            "message": "Rate your productivity each day on the Dashboard to unlock personalized insights about how your mornings affect your day.",
+            "priority": "low"
         })
 
     if scores["total_score"] >= 80:
