@@ -61,22 +61,29 @@ function CoachDashboard() {
                   <div className="coach-user-email">{u.email}</div>
                 </div>
                 <div className="coach-user-stats">
-                  <div className="coach-stat">
-                    <div className="coach-stat-label">Alarms</div>
-                    <div className="coach-stat-value">{u.total_alarms}</div>
-                  </div>
-                  <div className="coach-stat">
-                    <div className="coach-stat-label">Sessions</div>
-                    <div className="coach-stat-value">{u.total_wakeup_sessions}</div>
-                  </div>
-                  <div className="coach-stat">
-                    <div className="coach-stat-label">Completion</div>
-                    <div className="coach-stat-value">{u.completion_rate}%</div>
-                  </div>
-                </div>
-                <div className="coach-user-difficulty">
-                  Difficulty: <strong>{u.difficulty_preference || "Not set"}</strong>
-                </div>
+  <div className="coach-stat">
+    <div className="coach-stat-label">Habit Score</div>
+    <div className="coach-stat-value" style={{ color: u.habit_score >= 60 ? "#16A34A" : u.habit_score >= 35 ? "#D97706" : "#DC2626" }}>
+      {Math.round(u.habit_score)}
+    </div>
+  </div>
+  <div className="coach-stat">
+    <div className="coach-stat-label">Sessions</div>
+    <div className="coach-stat-value">{u.total_wakeup_sessions}</div>
+  </div>
+  <div className="coach-stat">
+    <div className="coach-stat-label">Completion</div>
+    <div className="coach-stat-value">{u.completion_rate}%</div>
+  </div>
+</div>
+<div className="coach-user-difficulty">
+  Difficulty: <strong>{u.difficulty_preference || "Not set"}</strong>
+  {u.trend !== "insufficient_data" && (
+    <span className={`coach-trend coach-trend-${u.trend}`}>
+      {u.trend === "improving" ? "📈 Improving" : u.trend === "declining" ? "📉 Declining" : "➡️ Stable"}
+    </span>
+  )}
+</div>
               </div>
             ))}
           </div>

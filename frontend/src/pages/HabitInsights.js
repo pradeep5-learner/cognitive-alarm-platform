@@ -180,23 +180,31 @@ function HabitInsights() {
 )}
 
         {difficultyPred && (
-          <>
-            <h2 className="section-heading">AI Difficulty Suggestion</h2>
-            <div className="info-card" style={{ marginBottom: 28 }}>
-              <div className="info-card-label">
-                {difficultyPred.is_ml_prediction ? "Based on your recent performance" : "Default (not enough history yet)"}
-              </div>
-              <div className="info-card-value" style={{ textTransform: "capitalize" }}>
-                {difficultyPred.recommended_difficulty}
-                {difficultyPred.is_ml_prediction && (
-                  <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500, marginLeft: 10 }}>
-                    {difficultyPred.confidence}% confidence
-                  </span>
-                )}
-              </div>
-            </div>
-          </>
+  <>
+    <h2 className="section-heading">AI Difficulty Suggestion</h2>
+    <div className="info-card" style={{ marginBottom: 14 }}>
+      <div className="info-card-label">
+        {difficultyPred.is_ml_prediction ? "Based on your recent performance" : "Default (not enough history yet)"}
+      </div>
+      <div className="info-card-value" style={{ textTransform: "capitalize" }}>
+        {difficultyPred.recommended_difficulty}
+        {difficultyPred.is_ml_prediction && (
+          <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500, marginLeft: 10 }}>
+            {difficultyPred.confidence}% confidence
+          </span>
         )}
+      </div>
+    </div>
+    {difficultyPred.trend !== "insufficient_data" && (
+      <div className={`trend-badge trend-${difficultyPred.trend}`} style={{ marginBottom: 28 }}>
+        <span className="trend-icon">
+          {difficultyPred.trend === "improving" ? "📈" : difficultyPred.trend === "declining" ? "📉" : "➡️"}
+        </span>
+        <span>{difficultyPred.trend_message}</span>
+      </div>
+    )}
+  </>
+)}
 
         {challengePerf && (
           <>

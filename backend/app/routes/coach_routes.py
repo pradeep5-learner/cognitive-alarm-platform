@@ -7,6 +7,8 @@ from app.models.user import User
 from app.models.alarm import Alarm
 from app.models.wakeup_log import WakeUpLog
 from app.schemas.admin_schema import CoachUserSummary
+from app.database.habit_scoring import calculate_habit_score
+from app.database.ml_difficulty_model import analyze_learning_trend
 
 router = APIRouter(prefix="/coach", tags=["Wellness Coach"])
 
@@ -31,6 +33,9 @@ def get_my_assigned_users(db: Session = Depends(get_db), current_user: User = De
         verified = len([log for log in logs if log.is_verified])
         completion_rate = (verified / total_sessions * 100) if total_sessions > 0 else 0.0
 
+        habit_scores = calculate_habit_score(db, u.id)
+        trend_data = analyze_learning_trend(db, u.id)
+
         summaries.append({
             "id": u.id,
             "name": u.name,
@@ -38,7 +43,9 @@ def get_my_assigned_users(db: Session = Depends(get_db), current_user: User = De
             "difficulty_preference": u.difficulty_preference,
             "total_alarms": total_alarms,
             "total_wakeup_sessions": total_sessions,
-            "completion_rate": round(completion_rate, 1)
+            "completion_rate": round(completion_rate, 1),
+            "habit_score": habit_scores["total_score"],
+            "trend": trend_data["trend"]
         })
 
     return summaries

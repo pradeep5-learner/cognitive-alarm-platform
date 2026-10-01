@@ -32,3 +32,5 @@ class CoachUserSummary(BaseModel):
     total_alarms: int
     total_wakeup_sessions: int
     completion_rate: float
+    habit_score: float
+    trend: str
