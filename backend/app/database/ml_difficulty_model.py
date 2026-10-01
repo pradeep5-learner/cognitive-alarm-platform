@@ -1,10 +1,12 @@
 import os
+import random
 import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from app.database.ml_training_data import generate_synthetic_dataset
+
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "ml_models")
 MODEL_PATH = os.path.join(MODEL_DIR, "difficulty_model.joblib")
@@ -98,3 +100,47 @@ def get_recommended_difficulty(db, user_id, fallback_difficulty="medium"):
     )
 
     return predicted_difficulty, confidence, True
+
+from app.models.challenge import Challenge
+
+CHALLENGE_TYPES = ["math", "riddle", "logic", "memory", "word_game", "pattern", "quiz"]
+
+def get_challenge_type_performance(db, user_id, limit=30):
+    recent_logs = (
+        db.query(WakeUpLog, Challenge)
+        .join(Challenge, WakeUpLog.challenge_id == Challenge.id)
+        .filter(WakeUpLog.user_id == user_id, WakeUpLog.is_verified == True)
+        .order_by(WakeUpLog.verified_at.desc())
+        .limit(limit)
+        .all()
+    )
+
+    type_stats = {t: {"attempts": [], "count": 0} for t in CHALLENGE_TYPES}
+    for wakeup_log, challenge in recent_logs:
+        if challenge.challenge_type in type_stats:
+            type_stats[challenge.challenge_type]["attempts"].append(wakeup_log.attempts)
+            type_stats[challenge.challenge_type]["count"] += 1
+
+    performance = {}
+    for t, data in type_stats.items():
+        if data["count"] == 0:
+            performance[t] = {"avg_attempts": None, "count": 0, "skill_weight": 1.0}
+        else:
+            avg_attempts = sum(data["attempts"]) / data["count"]
+            skill_weight = max(0.3, min(3.0, 2.0 / avg_attempts))
+            performance[t] = {
+                "avg_attempts": round(avg_attempts, 2),
+                "count": data["count"],
+                "skill_weight": round(skill_weight, 2)
+            }
+
+    return performance
+
+
+def pick_weighted_challenge_type(db, user_id):
+    performance = get_challenge_type_performance(db, user_id)
+
+    types = list(performance.keys())
+    weights = [performance[t]["skill_weight"] for t in types]
+
+    return random.choices(types, weights=weights, k=1)[0]

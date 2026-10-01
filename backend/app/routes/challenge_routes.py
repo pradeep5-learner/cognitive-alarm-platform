@@ -45,3 +45,12 @@ def submit_answer(submission: ChallengeAnswerSubmit, db: Session = Depends(get_d
         "is_correct": is_correct,
         "correct_answer": challenge.correct_answer if not is_correct else None
     }
+
+
+from app.database.ml_difficulty_model import get_challenge_type_performance
+from app.schemas.challenge_performance_schema import ChallengeTypePerformanceResponse
+
+@router.get("/performance", response_model=ChallengeTypePerformanceResponse)
+def get_my_challenge_performance(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    performance = get_challenge_type_performance(db, current_user.id)
+    return {"performance": performance}
