@@ -935,3 +935,56 @@ body {
   margin-top: 6px;
   line-height: 1.5;
 }
+
+.perf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.perf-card {
+  background: var(--white);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.perf-type {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dark);
+  text-transform: capitalize;
+  margin-bottom: 8px;
+}
+
+.perf-stat {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.perf-bar-track {
+  height: 6px;
+  background: #EEF2FF;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.perf-bar-fill {
+  height: 100%;
+  background: #16A34A;
+  border-radius: 10px;
+}
+
+.perf-count {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.perf-untested {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}

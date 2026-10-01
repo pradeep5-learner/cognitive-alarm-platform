@@ -10,6 +10,7 @@ import {
   getRecommendations, getDifficultyPrediction
 } from "../services/habitService";
 import { getProductivityCorrelation } from "../services/productivityService";
+import { getChallengePerformance } from "../services/habitService";
 
 function HabitInsights() {
   const [score, setScore] = useState(null);
@@ -19,17 +20,19 @@ function HabitInsights() {
   const [difficultyPred, setDifficultyPred] = useState(null);
   const [loading, setLoading] = useState(true);
   const [productivity, setProductivity] = useState(null);
+  const [challengePerf, setChallengePerf] = useState(null);
 
   useEffect(() => {
     const loadAll = async () => {
       try {
-        const [scoreRes, historyRes, analyticsRes, recsRes, diffRes, prodRes] = await Promise.all([
+        const [scoreRes, historyRes, analyticsRes, recsRes, diffRes, prodRes, perfRes] = await Promise.all([
           getHabitScore(),
           getHabitScoreHistory(),
           getBehavioralAnalytics(),
           getRecommendations(),
           getDifficultyPrediction(),
           getProductivityCorrelation(),
+          getChallengePerformance(),
         ]);
         setScore(scoreRes.data);
         setHistory(
@@ -43,6 +46,7 @@ function HabitInsights() {
         setRecommendations(recsRes.data.recommendations);
         setDifficultyPred(diffRes.data);
         setProductivity(prodRes.data);
+        setChallengePerf(perfRes.data.performance);
       } catch (err) {
         toast.error("Could not load habit insights");
       } finally {
@@ -190,6 +194,30 @@ function HabitInsights() {
                   </span>
                 )}
               </div>
+            </div>
+          </>
+        )}
+
+        {challengePerf && (
+          <>
+            <h2 className="section-heading">Challenge Type Performance</h2>
+            <div className="perf-grid">
+              {Object.entries(challengePerf).map(([type, data]) => (
+                <div className="perf-card" key={type}>
+                  <div className="perf-type">{type.replace("_", " ")}</div>
+                  {data.count > 0 ? (
+                    <>
+                      <div className="perf-stat">{data.avg_attempts} avg attempts</div>
+                      <div className="perf-bar-track">
+                        <div className="perf-bar-fill" style={{ width: `${Math.min(100, (data.skill_weight / 3) * 100)}%` }} />
+                      </div>
+                      <div className="perf-count">{data.count} completed</div>
+                    </>
+                  ) : (
+                    <div className="perf-untested">Not tried yet</div>
+                  )}
+                </div>
+              ))}
             </div>
           </>
         )}

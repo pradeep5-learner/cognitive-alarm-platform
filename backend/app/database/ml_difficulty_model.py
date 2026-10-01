@@ -144,3 +144,47 @@ def pick_weighted_challenge_type(db, user_id):
     weights = [performance[t]["skill_weight"] for t in types]
 
     return random.choices(types, weights=weights, k=1)[0]
+
+
+def analyze_learning_trend(db, user_id, window_size=5):
+    recent_logs = (
+        db.query(WakeUpLog)
+        .filter(WakeUpLog.user_id == user_id, WakeUpLog.is_verified == True)
+        .order_by(WakeUpLog.verified_at.desc())
+        .limit(window_size * 2)
+        .all()
+    )
+
+    if len(recent_logs) < window_size * 2:
+        return {
+            "trend": "insufficient_data",
+            "message": "Complete more alarms to see your learning trend.",
+            "recent_avg_attempts": None,
+            "older_avg_attempts": None
+        }
+
+    recent_logs_ordered = list(reversed(recent_logs))
+    older_half = recent_logs_ordered[:window_size]
+    newer_half = recent_logs_ordered[window_size:]
+
+    older_avg = sum(log.attempts for log in older_half) / len(older_half)
+    newer_avg = sum(log.attempts for log in newer_half) / len(newer_half)
+
+    change = older_avg - newer_avg
+
+    if change > 0.3:
+        trend = "improving"
+        message = f"You're improving. Average attempts dropped from {round(older_avg, 1)} to {round(newer_avg, 1)}."
+    elif change < -0.3:
+        trend = "declining"
+        message = f"Your attempts are trending up, from {round(older_avg, 1)} to {round(newer_avg, 1)}. Consider an easier difficulty."
+    else:
+        trend = "stable"
+        message = f"Your performance has been steady, around {round(newer_avg, 1)} attempts per session."
+
+    return {
+        "trend": trend,
+        "message": message,
+        "recent_avg_attempts": round(newer_avg, 2),
+        "older_avg_attempts": round(older_avg, 2)
+    }
