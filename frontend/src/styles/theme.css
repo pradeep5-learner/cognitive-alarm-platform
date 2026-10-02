@@ -1078,3 +1078,31 @@ body {
   text-transform: capitalize;
   margin-top: 8px;
 }
+
+.engagement-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #FFFBEB;
+  border: 1.5px solid #FDE68A;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.engagement-icon {
+  font-size: 22px;
+}
+
+.engagement-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #92400E;
+  margin-bottom: 3px;
+}
+
+.engagement-text {
+  font-size: 13px;
+  color: #B45309;
+  line-height: 1.4;
+}

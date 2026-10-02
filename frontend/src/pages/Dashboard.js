@@ -6,6 +6,7 @@ import { getAnalytics } from "../services/wakeupService";
 import { getDifficultyPrediction } from "../services/habitService";
 import { logProductivity } from "../services/productivityService";
 import { toast } from "react-toastify";
+import { getEngagementStatus } from "../services/habitService";
 
 function Dashboard() {
   const { user } = useAuth();
@@ -15,6 +16,7 @@ function Dashboard() {
   const [aiDifficulty, setAiDifficulty] = useState(null);
   const [productivityRating, setProductivityRating] = useState(null);
   const [savingRating, setSavingRating] = useState(false);
+  const [engagement, setEngagement] = useState(null);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -34,6 +36,13 @@ function Dashboard() {
       setAiDifficulty(diffRes.data);
       } catch (err) {
       setAiDifficulty(null);
+      }
+
+      try {
+        const engagementRes = await getEngagementStatus();
+        setEngagement(engagementRes.data);
+      } catch (err) {
+        setEngagement(null);
       }
     };
     loadStats();
@@ -60,6 +69,18 @@ function Dashboard() {
           <h1 className="dashboard-title">Welcome, {user?.name} 👋</h1>
           <p className="dashboard-subtitle">Here's your account overview</p>
         </div>
+
+        {engagement && engagement.disengaging && (
+          <div className="engagement-banner">
+            <span className="engagement-icon">💪</span>
+            <div>
+              <div className="engagement-title">We've eased things up for you</div>
+              <div className="engagement-text">
+                Your recent completion rate is {engagement.recent_completion_rate}%. Your next alarms will be a bit easier to help you build momentum.
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="card-grid">
           <div className="info-card">

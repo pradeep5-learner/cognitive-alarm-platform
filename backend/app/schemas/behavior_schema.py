@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List
+from typing import Optional
 
 class DayOfWeekStat(BaseModel):
     day: str
@@ -17,3 +18,9 @@ class BehavioralAnalytics(BaseModel):
     worst_day: str
     best_day: str
     avg_response_time_minutes: float
+
+class SleepPatternAnalysis(BaseModel):
+    sleep_duration_hours: Optional[float] = None
+    category: str
+    avg_attempts_on_this_schedule: Optional[float] = None
+    insight: str

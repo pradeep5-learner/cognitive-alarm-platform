@@ -67,3 +67,47 @@ def calculate_behavioral_analytics(db, user_id):
         "best_day": best_day,
         "avg_response_time_minutes": avg_response_time
     }
+
+from app.models.user import User
+
+def analyze_sleep_patterns(db, user_id):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user or not user.sleep_duration_hours:
+        return {
+            "sleep_duration_hours": None,
+            "category": "not_set",
+            "avg_attempts_on_this_schedule": None,
+            "insight": "Set your intended sleep duration in Profile to see how it relates to your performance."
+        }
+
+    hours = user.sleep_duration_hours
+    if hours < 6:
+        category = "short"
+    elif hours <= 8:
+        category = "adequate"
+    else:
+        category = "long"
+
+    logs = db.query(WakeUpLog).filter(
+        WakeUpLog.user_id == user_id,
+        WakeUpLog.is_verified == True
+    ).order_by(WakeUpLog.verified_at.desc()).limit(20).all()
+
+    if not logs:
+        avg_attempts = None
+        insight = f"You've set a {category} sleep duration ({hours}h). Complete some alarms to see how it relates to your performance."
+    else:
+        avg_attempts = round(sum(l.attempts for l in logs) / len(logs), 2)
+        if category == "short" and avg_attempts > 1.5:
+            insight = f"With {hours}h of planned sleep, your average attempts are higher ({avg_attempts}). Getting more sleep may improve your mornings."
+        elif category == "adequate" and avg_attempts <= 1.5:
+            insight = f"Your {hours}h sleep schedule is paired with strong performance ({avg_attempts} avg attempts). This duration seems to work well for you."
+        else:
+            insight = f"With {hours}h of planned sleep, your average attempts are {avg_attempts}."
+
+    return {
+        "sleep_duration_hours": hours,
+        "category": category,
+        "avg_attempts_on_this_schedule": avg_attempts,
+        "insight": insight
+    }
