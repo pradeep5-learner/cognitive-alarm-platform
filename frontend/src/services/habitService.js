@@ -7,3 +7,4 @@ export const getRecommendations = () => api.get("/recommendations/");
 export const getDifficultyPrediction = () => api.get("/difficulty/predict");
 export const getChallengePerformance = () => api.get("/challenges/performance");
 export const getEngagementStatus = () => api.get("/difficulty/engagement");
+export const getSleepPatterns = () => api.get("/behavior/sleep-patterns");

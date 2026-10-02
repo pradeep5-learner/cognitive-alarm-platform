@@ -11,6 +11,7 @@ import {
 } from "../services/habitService";
 import { getProductivityCorrelation } from "../services/productivityService";
 import { getChallengePerformance } from "../services/habitService";
+import { getSleepPatterns } from "../services/habitService";
 
 function HabitInsights() {
   const [score, setScore] = useState(null);
@@ -21,11 +22,12 @@ function HabitInsights() {
   const [loading, setLoading] = useState(true);
   const [productivity, setProductivity] = useState(null);
   const [challengePerf, setChallengePerf] = useState(null);
+  const [sleepPattern, setSleepPattern] = useState(null);
 
   useEffect(() => {
     const loadAll = async () => {
       try {
-        const [scoreRes, historyRes, analyticsRes, recsRes, diffRes, prodRes, perfRes] = await Promise.all([
+        const [scoreRes, historyRes, analyticsRes, recsRes, diffRes, prodRes, perfRes, sleepRes] = await Promise.all([
           getHabitScore(),
           getHabitScoreHistory(),
           getBehavioralAnalytics(),
@@ -33,6 +35,7 @@ function HabitInsights() {
           getDifficultyPrediction(),
           getProductivityCorrelation(),
           getChallengePerformance(),
+          getSleepPatterns(),
         ]);
         setScore(scoreRes.data);
         setHistory(
@@ -47,6 +50,7 @@ function HabitInsights() {
         setDifficultyPred(diffRes.data);
         setProductivity(prodRes.data);
         setChallengePerf(perfRes.data.performance);
+        setSleepPattern(sleepRes.data);
       } catch (err) {
         toast.error("Could not load habit insights");
       } finally {
@@ -153,6 +157,20 @@ function HabitInsights() {
             </div>
           </>
         )}
+
+        {sleepPattern && sleepPattern.category !== "not_set" && (
+  <>
+    <h2 className="section-heading">Sleep Pattern Insight</h2>
+    <div className="info-card" style={{ marginBottom: 28 }}>
+      <div className="info-card-label">
+        {sleepPattern.sleep_duration_hours}h planned sleep · <span style={{ textTransform: "capitalize" }}>{sleepPattern.category}</span>
+      </div>
+      <div style={{ fontSize: 14, color: "var(--text-dark)", marginTop: 8, lineHeight: 1.5 }}>
+        {sleepPattern.insight}
+      </div>
+    </div>
+  </>
+)}
 
         {productivity && productivity.daily_points.length >= 3 && (
   <>
