@@ -188,3 +188,60 @@ def analyze_learning_trend(db, user_id, window_size=5):
         "recent_avg_attempts": round(newer_avg, 2),
         "older_avg_attempts": round(older_avg, 2)
     }
+
+from datetime import datetime, timedelta
+
+DIFFICULTY_ORDER = ["beginner", "easy", "medium", "hard", "expert"]
+
+def calculate_engagement_status(db, user_id):
+    now = datetime.utcnow()
+    last_7_days = db.query(WakeUpLog).filter(
+        WakeUpLog.user_id == user_id,
+        WakeUpLog.started_at >= now - timedelta(days=7)
+    ).all()
+    prev_7_days = db.query(WakeUpLog).filter(
+        WakeUpLog.user_id == user_id,
+        WakeUpLog.started_at >= now - timedelta(days=14),
+        WakeUpLog.started_at < now - timedelta(days=7)
+    ).all()
+
+    recent_count = len(last_7_days)
+    prev_count = len(prev_7_days)
+
+    recent_verified = [l for l in last_7_days if l.is_verified]
+    recent_completion = (len(recent_verified) / recent_count * 100) if recent_count > 0 else None
+
+    disengaging = False
+    reasons = []
+
+    if prev_count >= 3 and recent_count < prev_count * 0.5:
+        disengaging = True
+        reasons.append("fewer alarms rung this week than last week")
+
+    if recent_completion is not None and recent_completion < 40 and recent_count >= 3:
+        disengaging = True
+        reasons.append("completion rate dropped below 40% this week")
+
+    if recent_count == 0 and prev_count > 0:
+        disengaging = True
+        reasons.append("no activity in the last 7 days")
+
+    return {
+        "disengaging": disengaging,
+        "reasons": reasons,
+        "recent_sessions": recent_count,
+        "previous_sessions": prev_count,
+        "recent_completion_rate": round(recent_completion, 1) if recent_completion is not None else None
+    }
+
+
+def apply_engagement_optimization(difficulty, required_streak, engagement_status):
+    if not engagement_status["disengaging"]:
+        return difficulty, required_streak
+
+    if difficulty in DIFFICULTY_ORDER:
+        idx = DIFFICULTY_ORDER.index(difficulty)
+        difficulty = DIFFICULTY_ORDER[max(0, idx - 1)]
+
+    required_streak = 1
+    return difficulty, required_streak

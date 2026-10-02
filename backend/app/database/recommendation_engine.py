@@ -23,6 +23,16 @@ def generate_recommendations(db, user_id):
         })
         return recommendations
 
+    from app.database.ml_difficulty_model import calculate_engagement_status
+    engagement = calculate_engagement_status(db, user_id)
+    if engagement["disengaging"]:
+        recommendations.append({
+            "category": "engagement",
+            "title": "We've eased things up for you",
+            "message": "Your activity or completion rate dropped recently, so your next alarms will be a bit easier to help you get back on track.",
+            "priority": "high"
+        })
+    
     if analytics["day_of_week_breakdown"]:
         worst = max(analytics["day_of_week_breakdown"], key=lambda d: d["avg_snoozes"])
         if worst["avg_snoozes"] >= 1.5:

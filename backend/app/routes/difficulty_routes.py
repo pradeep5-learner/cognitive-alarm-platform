@@ -29,3 +29,9 @@ def predict_my_difficulty(db: Session = Depends(get_db), current_user: User = De
         "trend": trend_data["trend"],
         "trend_message": trend_data["message"]
     }
+
+from app.database.ml_difficulty_model import calculate_engagement_status
+
+@router.get("/engagement")
+def get_engagement_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return calculate_engagement_status(db, current_user.id)
