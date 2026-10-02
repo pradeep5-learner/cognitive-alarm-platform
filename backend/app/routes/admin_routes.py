@@ -7,6 +7,7 @@ from app.models.user import User
 from app.models.alarm import Alarm
 from app.models.wakeup_log import WakeUpLog
 from app.schemas.admin_schema import UserListItem, PlatformStats, RoleUpdateRequest
+from app.database.habit_scoring import calculate_habit_score
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -41,7 +42,6 @@ def update_user_role(user_id: int, request: RoleUpdateRequest, db: Session = Dep
     db.refresh(target_user)
     return target_user
 
-
 @router.get("/stats", response_model=PlatformStats)
 def get_platform_stats(db: Session = Depends(get_db), current_user: User = Depends(require_role(["admin"]))):
     total_users = db.query(User).count()
@@ -53,12 +53,24 @@ def get_platform_stats(db: Session = Depends(get_db), current_user: User = Depen
     verified_sessions = len([log for log in all_logs if log.is_verified])
     completion_rate = (verified_sessions / total_sessions * 100) if total_sessions > 0 else 0.0
 
+    all_users = db.query(User).filter(User.role == "user").all()
+    habit_scores = [calculate_habit_score(db, u.id)["total_score"] for u in all_users]
+    avg_habit_score = round(sum(habit_scores) / len(habit_scores), 1) if habit_scores else 0.0
+
+    difficulty_distribution = {"beginner": 0, "easy": 0, "medium": 0, "hard": 0, "expert": 0}
+    for u in all_users:
+        pref = u.difficulty_preference or "medium"
+        if pref in difficulty_distribution:
+            difficulty_distribution[pref] += 1
+
     return {
         "total_users": total_users,
         "total_alarms": total_alarms,
         "active_alarms": active_alarms,
         "total_wakeup_sessions": total_sessions,
-        "platform_completion_rate": round(completion_rate, 1)
+        "platform_completion_rate": round(completion_rate, 1),
+        "avg_habit_score": avg_habit_score,
+        "difficulty_distribution": difficulty_distribution
     }
 
 from app.schemas.admin_schema import CoachAssignRequest

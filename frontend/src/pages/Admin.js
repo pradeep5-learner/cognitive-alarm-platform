@@ -72,25 +72,47 @@ function Admin() {
         </div>
 
         {stats && (
-          <div className="card-grid">
-            <div className="info-card">
-              <div className="info-card-label">Total Users</div>
-              <div className="info-card-value">{stats.total_users}</div>
-            </div>
-            <div className="info-card">
-              <div className="info-card-label">Total Alarms</div>
-              <div className="info-card-value">{stats.total_alarms}</div>
-            </div>
-            <div className="info-card">
-              <div className="info-card-label">Active Alarms</div>
-              <div className="info-card-value">{stats.active_alarms}</div>
-            </div>
-            <div className="info-card">
-              <div className="info-card-label">Platform Completion Rate</div>
-              <div className="info-card-value">{stats.platform_completion_rate}%</div>
-            </div>
+  <>
+    <div className="card-grid">
+      <div className="info-card">
+        <div className="info-card-label">Total Users</div>
+        <div className="info-card-value">{stats.total_users}</div>
+      </div>
+      <div className="info-card">
+        <div className="info-card-label">Total Alarms</div>
+        <div className="info-card-value">{stats.total_alarms}</div>
+      </div>
+      <div className="info-card">
+        <div className="info-card-label">Active Alarms</div>
+        <div className="info-card-value">{stats.active_alarms}</div>
+      </div>
+      <div className="info-card">
+        <div className="info-card-label">Platform Completion Rate</div>
+        <div className="info-card-value">{stats.platform_completion_rate}%</div>
+      </div>
+      <div className="info-card">
+        <div className="info-card-label">Avg. Habit Score</div>
+        <div className="info-card-value">{stats.avg_habit_score}</div>
+      </div>
+    </div>
+
+    <h2 className="section-heading">Difficulty Distribution</h2>
+    <div className="chart-card">
+      <div className="diff-dist-row">
+        {Object.entries(stats.difficulty_distribution).map(([level, count]) => (
+          <div className="diff-dist-bar" key={level}>
+            <div className="diff-dist-count">{count}</div>
+            <div
+              className="diff-dist-fill"
+              style={{ height: `${Math.max(6, (count / Math.max(1, stats.total_users)) * 100)}px` }}
+            />
+            <div className="diff-dist-label">{level}</div>
           </div>
-        )}
+        ))}
+      </div>
+    </div>
+  </>
+)}
 
         <h2 className="section-heading">All Users</h2>
         <div className="admin-table">

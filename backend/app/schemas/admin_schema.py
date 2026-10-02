@@ -17,6 +17,8 @@ class PlatformStats(BaseModel):
     active_alarms: int
     total_wakeup_sessions: int
     platform_completion_rate: float
+    avg_habit_score: float
+    difficulty_distribution: dict
 
 class RoleUpdateRequest(BaseModel):
     role: str
