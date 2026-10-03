@@ -15,3 +15,10 @@ class HabitScoreHistoryItem(BaseModel):
 
     class Config:
         from_attributes = True
+
+from typing import Optional
+
+class DailyStreakResponse(BaseModel):
+    current_streak: int
+    longest_streak: int
+    last_success_date: Optional[str] = None

@@ -117,3 +117,49 @@ def calculate_productivity_score(db, user_id):
     avg_rating = sum(log.rating for log in recent_logs) / len(recent_logs)
     score = (avg_rating / 5) * 100
     return round(score, 1)
+
+from datetime import date, timedelta as td
+
+def calculate_daily_streak(db, user_id):
+    logs = db.query(WakeUpLog).filter(
+        WakeUpLog.user_id == user_id,
+        WakeUpLog.is_verified == True
+    ).all()
+
+    if not logs:
+        return {"current_streak": 0, "longest_streak": 0, "last_success_date": None}
+
+    success_dates = set()
+    for log in logs:
+        if log.verified_at:
+            success_dates.add(log.verified_at.date())
+
+    sorted_dates = sorted(success_dates)
+
+    longest_streak = 1
+    current_run = 1
+    for i in range(1, len(sorted_dates)):
+        if sorted_dates[i] == sorted_dates[i - 1] + td(days=1):
+            current_run += 1
+        else:
+            current_run = 1
+        longest_streak = max(longest_streak, current_run)
+
+    today = date.today()
+    yesterday = today - td(days=1)
+    last_success = sorted_dates[-1]
+
+    if last_success == today or last_success == yesterday:
+        current_streak = 1
+        check_date = last_success
+        while (check_date - td(days=1)) in success_dates:
+            current_streak += 1
+            check_date -= td(days=1)
+    else:
+        current_streak = 0
+
+    return {
+        "current_streak": current_streak,
+        "longest_streak": longest_streak,
+        "last_success_date": last_success.isoformat()
+    }
