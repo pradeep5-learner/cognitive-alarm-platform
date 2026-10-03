@@ -11,3 +11,4 @@ export const snoozeWakeUp = (wakeupLogId) =>
 export const timeoutWakeUp = (wakeupLogId) =>
   api.post("/wakeup/timeout", { wakeup_log_id: wakeupLogId });
 export const getAnalytics = () => api.get("/wakeup/analytics");
+export const getSmartScheduleSuggestion = (alarmId) => api.get(`/behavior/smart-schedule/${alarmId}`);

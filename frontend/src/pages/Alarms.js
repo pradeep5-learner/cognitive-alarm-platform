@@ -4,6 +4,7 @@ import { getAlarms, createAlarm, updateAlarm, deleteAlarm } from "../services/al
 import { formatTime } from "../utils/formatTime";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { getSmartScheduleSuggestion } from "../services/wakeupService";
 
 
 function Alarms() {
@@ -13,11 +14,13 @@ function Alarms() {
   const [alarmType, setAlarmType] = useState("daily");
   const [editingId, setEditingId] = useState(null);
   const navigate = useNavigate();
+  const [suggestions, setSuggestions] = useState({});
 
   const loadAlarms = async () => {
   try {
     const res = await getAlarms();
     setAlarms(res.data);
+    res.data.forEach((alarm) => checkSuggestion(alarm.id));
   } catch (err) {
     toast.error("Could not load alarms");
   }
@@ -80,6 +83,32 @@ const handleToggleActive = async (alarm) => {
   }
 };
 
+const checkSuggestion = async (alarmId) => {
+  try {
+    const res = await getSmartScheduleSuggestion(alarmId);
+    if (res.data.has_suggestion) {
+      setSuggestions((prev) => ({ ...prev, [alarmId]: res.data }));
+    }
+  } catch (err) {
+    // silently skip - not critical
+  }
+};
+
+const acceptSuggestion = async (alarmId, newTime) => {
+  try {
+    await updateAlarm(alarmId, { time: newTime + ":00" });
+    toast.success("Alarm time updated!");
+    setSuggestions((prev) => {
+      const copy = { ...prev };
+      delete copy[alarmId];
+      return copy;
+    });
+    loadAlarms();
+  } catch (err) {
+    toast.error("Could not update alarm");
+  }
+};
+
   return (
     <div className="dashboard-page">
       <Navbar />
@@ -137,6 +166,14 @@ const handleToggleActive = async (alarm) => {
           )}
           {alarms.map((alarm) => (
   <div className={`alarm-item ${!alarm.is_active ? "alarm-inactive" : ""}`} key={alarm.id}>
+    {suggestions[alarm.id] && (
+  <div className="smart-suggestion-banner">
+    <span>🧠 Suggestion: ring at <strong>{suggestions[alarm.id].suggested_time}</strong> instead — {suggestions[alarm.id].reason}</span>
+    <button className="btn-edit" onClick={() => acceptSuggestion(alarm.id, suggestions[alarm.id].suggested_time)}>
+      Accept
+    </button>
+  </div>
+)}
     <div className="alarm-item-left">
       <label className="toggle-switch">
         <input

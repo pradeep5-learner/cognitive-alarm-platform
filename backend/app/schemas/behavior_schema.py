@@ -24,3 +24,9 @@ class SleepPatternAnalysis(BaseModel):
     category: str
     avg_attempts_on_this_schedule: Optional[float] = None
     insight: str
+
+class SmartScheduleSuggestion(BaseModel):
+    has_suggestion: bool
+    current_time: str
+    suggested_time: Optional[str] = None
+    reason: str

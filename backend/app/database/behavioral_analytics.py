@@ -111,3 +111,65 @@ def analyze_sleep_patterns(db, user_id):
         "avg_attempts_on_this_schedule": avg_attempts,
         "insight": insight
     }
+
+from app.models.alarm import Alarm
+
+def suggest_smart_schedule(db, user_id, alarm_id):
+    alarm = db.query(Alarm).filter(Alarm.id == alarm_id, Alarm.user_id == user_id).first()
+    if not alarm:
+        return None
+
+    logs = (
+        db.query(WakeUpLog)
+        .filter(WakeUpLog.alarm_id == alarm_id, WakeUpLog.user_id == user_id, WakeUpLog.is_verified == True)
+        .order_by(WakeUpLog.verified_at.desc())
+        .limit(10)
+        .all()
+    )
+
+    if len(logs) < 5:
+        return {
+            "has_suggestion": False,
+            "current_time": alarm.time.strftime("%H:%M"),
+            "suggested_time": None,
+            "reason": "Need at least 5 completed wake-ups on this alarm to suggest a schedule change."
+        }
+
+    avg_snoozes = sum(l.snooze_count for l in logs) / len(logs)
+    response_minutes = []
+    for l in logs:
+        started = l.started_at.replace(tzinfo=None) if l.started_at.tzinfo else l.started_at
+        verified = l.verified_at.replace(tzinfo=None) if l.verified_at.tzinfo else l.verified_at
+        delta = (verified - started).total_seconds() / 60
+        if delta >= 0:
+            response_minutes.append(delta)
+    avg_response = sum(response_minutes) / len(response_minutes) if response_minutes else 0
+
+    shift_minutes = 0
+    reasons = []
+    if avg_snoozes >= 1.5:
+        shift_minutes += int(avg_snoozes * 5)
+        reasons.append(f"averaging {round(avg_snoozes, 1)} snoozes")
+    if avg_response >= 3:
+        shift_minutes += int(avg_response)
+        reasons.append(f"averaging {round(avg_response, 1)} minutes to fully wake up")
+
+    shift_minutes = min(shift_minutes, 30)
+
+    if shift_minutes < 5:
+        return {
+            "has_suggestion": False,
+            "current_time": alarm.time.strftime("%H:%M"),
+            "suggested_time": None,
+            "reason": "Your wake-up pattern looks consistent. No schedule change needed."
+        }
+
+    current_dt = datetime.combine(datetime.today(), alarm.time)
+    suggested_dt = current_dt - timedelta(minutes=shift_minutes)
+
+    return {
+        "has_suggestion": True,
+        "current_time": alarm.time.strftime("%H:%M"),
+        "suggested_time": suggested_dt.strftime("%H:%M"),
+        "reason": f"Based on {', '.join(reasons)}, ringing {shift_minutes} min earlier may help you be ready on time."
+    }
