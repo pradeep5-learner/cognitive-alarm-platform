@@ -1,5 +1,6 @@
 from collections import defaultdict
 from app.models.wakeup_log import WakeUpLog
+from datetime import datetime, timedelta
 
 DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -119,13 +120,13 @@ def suggest_smart_schedule(db, user_id, alarm_id):
     if not alarm:
         return None
 
-    logs = (
-        db.query(WakeUpLog)
-        .filter(WakeUpLog.alarm_id == alarm_id, WakeUpLog.user_id == user_id, WakeUpLog.is_verified == True)
-        .order_by(WakeUpLog.verified_at.desc())
-        .limit(10)
-        .all()
+    cutoff = alarm.updated_at.replace(tzinfo=None) if alarm.updated_at and alarm.updated_at.tzinfo else alarm.updated_at
+    logs_query = db.query(WakeUpLog).filter(
+        WakeUpLog.alarm_id == alarm_id, WakeUpLog.user_id == user_id, WakeUpLog.is_verified == True
     )
+    if cutoff:
+        logs_query = logs_query.filter(WakeUpLog.verified_at >= cutoff)
+    logs = logs_query.order_by(WakeUpLog.verified_at.desc()).limit(10).all()
 
     if len(logs) < 5:
         return {

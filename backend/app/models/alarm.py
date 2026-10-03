@@ -9,6 +9,7 @@ class Alarm(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     label = Column(String, default="Alarm")
     time = Column(Time, nullable=False)
-    alarm_type = Column(String, default="daily")  # daily, weekday, weekend, one_time, smart_adaptive
+    alarm_type = Column(String, default="daily")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -27,8 +27,9 @@ function Alarms() {
 };
 
   useEffect(() => {
-    loadAlarms();
-  }, []);
+  loadAlarms();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   const resetForm = () => {
     setLabel("");
@@ -165,38 +166,40 @@ const acceptSuggestion = async (alarmId, newTime) => {
             <p className="dashboard-subtitle">No alarms yet — add your first one above.</p>
           )}
           {alarms.map((alarm) => (
-  <div className={`alarm-item ${!alarm.is_active ? "alarm-inactive" : ""}`} key={alarm.id}>
-    {suggestions[alarm.id] && (
-  <div className="smart-suggestion-banner">
-    <span>🧠 Suggestion: ring at <strong>{suggestions[alarm.id].suggested_time}</strong> instead — {suggestions[alarm.id].reason}</span>
-    <button className="btn-edit" onClick={() => acceptSuggestion(alarm.id, suggestions[alarm.id].suggested_time)}>
-      Accept
-    </button>
-  </div>
-)}
-    <div className="alarm-item-left">
-      <label className="toggle-switch">
-        <input
-          type="checkbox"
-          checked={alarm.is_active}
-          onChange={() => handleToggleActive(alarm)}
-        />
-        <span className="toggle-slider"></span>
-      </label>
-      <div>
-        <div className="alarm-time">{formatTime(alarm.time)}</div>
-        <div className="alarm-meta">
-          {alarm.label} · <span className="alarm-type-badge">{alarm.alarm_type}</span>
-        </div>
-      </div>
-    </div>
-    <div className="alarm-actions">
-      <button className="btn-ring" onClick={() => navigate(`/alarm-ring/${alarm.id}`)}>Ring Now</button>
-      <button className="btn-edit" onClick={() => handleEdit(alarm)}>Edit</button>
-      <button className="btn-delete" onClick={() => handleDelete(alarm.id)}>Delete</button>
-    </div>
-  </div>
-))}
+            <div className={`alarm-item ${!alarm.is_active ? "alarm-inactive" : ""}`} key={alarm.id}>
+              {suggestions[alarm.id] && (
+                <div className="smart-suggestion-banner">
+                  <span>🧠 Suggestion: ring at <strong>{suggestions[alarm.id].suggested_time}</strong> instead — {suggestions[alarm.id].reason}</span>
+                  <button className="btn-edit" onClick={() => acceptSuggestion(alarm.id, suggestions[alarm.id].suggested_time)}>
+                    Accept
+                  </button>
+                </div>
+              )}
+              <div className="alarm-item-row">
+                <div className="alarm-item-left">
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={alarm.is_active}
+                      onChange={() => handleToggleActive(alarm)}
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                  <div>
+                    <div className="alarm-time">{formatTime(alarm.time)}</div>
+                    <div className="alarm-meta">
+                      {alarm.label} · <span className="alarm-type-badge">{alarm.alarm_type}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="alarm-actions">
+                  <button className="btn-ring" onClick={() => navigate(`/alarm-ring/${alarm.id}`)}>Ring Now</button>
+                  <button className="btn-edit" onClick={() => handleEdit(alarm)}>Edit</button>
+                  <button className="btn-delete" onClick={() => handleDelete(alarm.id)}>Delete</button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
