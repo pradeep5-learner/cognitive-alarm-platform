@@ -16,6 +16,10 @@ import { getDailyStreak } from "../services/habitService";
 import { Flame } from "lucide-react";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { getRLAgentStatus } from "../services/habitService";
+import { downloadPdfReport, downloadExcelReport } from "../services/reportService";
+import { triggerDownload } from "../utils/downloadFile";
+import { FileText, FileSpreadsheet } from "lucide-react";
+
 
 
 function HabitInsights() {
@@ -71,6 +75,26 @@ function HabitInsights() {
     loadAll();
   }, []);
 
+  const handleDownloadPdf = async () => {
+  try {
+    const res = await downloadPdfReport();
+    triggerDownload(res.data, "habit_report.pdf");
+    toast.success("PDF report downloaded");
+  } catch (err) {
+    toast.error("Could not download report");
+  }
+};
+
+const handleDownloadExcel = async () => {
+  try {
+    const res = await downloadExcelReport();
+    triggerDownload(res.data, "habit_report.xlsx");
+    toast.success("Excel report downloaded");
+  } catch (err) {
+    toast.error("Could not download report");
+  }
+};
+
   if (loading) {
     return (
       <AppLayout>
@@ -103,6 +127,18 @@ function HabitInsights() {
             </div>
           </div>
         )}
+
+        <div className="report-download-bar">
+  <span className="report-download-label">Export your full report</span>
+  <div className="report-download-buttons">
+    <button className="btn-report" onClick={handleDownloadPdf}>
+      <FileText size={15} /> PDF
+    </button>
+    <button className="btn-report" onClick={handleDownloadExcel}>
+      <FileSpreadsheet size={15} /> Excel
+    </button>
+  </div>
+</div>
 
         {score && (
           <div className="habit-score-hero">
