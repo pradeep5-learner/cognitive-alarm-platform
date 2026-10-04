@@ -9,3 +9,4 @@ export const getChallengePerformance = () => api.get("/challenges/performance");
 export const getEngagementStatus = () => api.get("/difficulty/engagement");
 export const getSleepPatterns = () => api.get("/behavior/sleep-patterns");
 export const getDailyStreak = () => api.get("/habits/streak");
+export const getRLAgentStatus = () => api.get("/difficulty/rl-agent");

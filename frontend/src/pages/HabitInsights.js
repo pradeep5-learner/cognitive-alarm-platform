@@ -15,6 +15,7 @@ import { getSleepPatterns } from "../services/habitService";
 import { getDailyStreak } from "../services/habitService";
 import { Flame } from "lucide-react";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { getRLAgentStatus } from "../services/habitService";
 
 
 function HabitInsights() {
@@ -28,11 +29,12 @@ function HabitInsights() {
   const [challengePerf, setChallengePerf] = useState(null);
   const [sleepPattern, setSleepPattern] = useState(null);
   const [streak, setStreak] = useState(null);
+  const [rlAgent, setRlAgent] = useState(null);
 
   useEffect(() => {
     const loadAll = async () => {
       try {
-        const [scoreRes, historyRes, analyticsRes, recsRes, diffRes, prodRes, perfRes, sleepRes, streakRes] = await Promise.all([
+        const [scoreRes, historyRes, analyticsRes, recsRes, diffRes, prodRes, perfRes, sleepRes, streakRes, rlRes] = await Promise.all([
           getHabitScore(),
           getHabitScoreHistory(),
           getBehavioralAnalytics(),
@@ -42,6 +44,7 @@ function HabitInsights() {
           getChallengePerformance(),
           getSleepPatterns(),
           getDailyStreak(),
+          getRLAgentStatus(),
         ]);
         setScore(scoreRes.data);
         setHistory(
@@ -58,6 +61,7 @@ function HabitInsights() {
         setChallengePerf(perfRes.data.performance);
         setSleepPattern(sleepRes.data);
         setStreak(streakRes.data);
+        setRlAgent(rlRes.data);
       } catch (err) {
         toast.error("Could not load habit insights");
       } finally {
@@ -244,6 +248,16 @@ function HabitInsights() {
       </div>
     )}
   </>
+)}
+
+         {rlAgent && (
+  <div className="info-card" style={{ marginBottom: 28 }}>
+    <div className="info-card-label">Reinforcement Learning Agent</div>
+    <div style={{ fontSize: 13, color: "var(--mist)", marginTop: 6 }}>
+      Learned preference: <strong style={{ color: "var(--ink)", textTransform: "capitalize" }}>{rlAgent.current_best_action}</strong> difficulty
+      {" "}(Q-values — increase: {rlAgent.q_values.increase}, decrease: {rlAgent.q_values.decrease}, stay: {rlAgent.q_values.stay})
+    </div>
+  </div>
 )}
 
         {challengePerf && (

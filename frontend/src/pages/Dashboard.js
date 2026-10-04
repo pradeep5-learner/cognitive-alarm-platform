@@ -4,7 +4,6 @@ import AppLayout from "../components/AppLayout";
 import { getAlarms } from "../services/alarmService";
 import { getAnalytics } from "../services/wakeupService";
 import { getDifficultyPrediction } from "../services/habitService";
-import { logProductivity } from "../services/productivityService";
 import { toast } from "react-toastify";
 import { getEngagementStatus } from "../services/habitService";
 import { getDailyStreak } from "../services/habitService";
@@ -12,6 +11,7 @@ import { Flame } from "lucide-react";
 import { Hand } from "lucide-react";
 import { ShieldCheck } from "lucide-react";
 import { Sparkles } from "lucide-react";
+import { logProductivity, getProductivityHistory } from "../services/productivityService";
 
 function Dashboard() {
   const { user } = useAuth();
@@ -57,6 +57,17 @@ function Dashboard() {
       } catch (err) {
         setStreak(null);
       }
+
+      try {
+  const historyRes = await getProductivityHistory();
+  const today = new Date().toISOString().split("T")[0];
+  const todayEntry = historyRes.data.find((h) => h.log_date === today);
+  if (todayEntry) {
+    setProductivityRating(todayEntry.rating);
+  }
+} catch (err) {
+  // silently skip
+}
     };
     loadStats();
   }, []);

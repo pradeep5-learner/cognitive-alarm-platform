@@ -56,8 +56,11 @@ def start_wakeup_verification(alarm_id: int, continue_from: int = None, db: Sess
     
     engagement_status = calculate_engagement_status(db, current_user.id)
     difficulty, required_streak = apply_engagement_optimization(difficulty, required_streak, engagement_status)
-    rl_action_chosen, rl_q_values = choose_action(db, current_user.id)
-    difficulty = apply_action(difficulty, rl_action_chosen)
+    if is_ml:
+        rl_action_chosen, rl_q_values = choose_action(db, current_user.id)
+        difficulty = apply_action(difficulty, rl_action_chosen)
+    else:
+        rl_action_chosen = None
     question, answer = generate_challenge(challenge_type, difficulty)
 
     new_challenge = Challenge(
