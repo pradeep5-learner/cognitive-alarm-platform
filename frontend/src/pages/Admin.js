@@ -4,12 +4,18 @@ import { toast } from "react-toastify";
 import AppLayout from "../components/AppLayout";
 import { useAuth } from "../context/AuthContext";
 import { getAllUsers, updateUserRole, getPlatformStats, assignCoach } from "../services/adminService";
+import { createAnnouncement } from "../services/notificationService";
+import { Megaphone } from "lucide-react";
+
 
 function Admin() {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [announceTitle, setAnnounceTitle] = useState("");
+  const [announceMessage, setAnnounceMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -53,6 +59,21 @@ function Admin() {
   }
 };
 
+  const handleSendAnnouncement = async (e) => {
+  e.preventDefault();
+  setSending(true);
+  try {
+    await createAnnouncement(announceTitle, announceMessage);
+    toast.success("Announcement sent to all users");
+    setAnnounceTitle("");
+    setAnnounceMessage("");
+  } catch (err) {
+    toast.error("Could not send announcement");
+  } finally {
+    setSending(false);
+  }
+};
+
   if (loading) {
     return (
       <AppLayout>
@@ -93,6 +114,30 @@ function Admin() {
         <div className="info-card-value">{stats.avg_habit_score}</div>
       </div>
     </div>
+
+    <h2 className="section-heading">Send Platform Announcement</h2>
+<form className="alarm-form" onSubmit={handleSendAnnouncement} style={{ marginBottom: 28 }}>
+  <input
+    className="form-input"
+    type="text"
+    placeholder="Announcement title"
+    value={announceTitle}
+    onChange={(e) => setAnnounceTitle(e.target.value)}
+    required
+    style={{ flex: "0 0 240px" }}
+  />
+  <input
+    className="form-input"
+    type="text"
+    placeholder="Message"
+    value={announceMessage}
+    onChange={(e) => setAnnounceMessage(e.target.value)}
+    required
+  />
+  <button className="btn-primary" type="submit" disabled={sending} style={{ width: "auto", padding: "11px 22px", display: "flex", alignItems: "center", gap: 7 }}>
+    <Megaphone size={15} /> {sending ? "Sending..." : "Send to All Users"}
+  </button>
+</form>
 
     <h2 className="section-heading">Difficulty Distribution</h2>
     <div className="chart-card">

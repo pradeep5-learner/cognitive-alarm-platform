@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import NotificationBell from "./NotificationBell";
 
 const icons = {
   dashboard: (
@@ -77,7 +78,8 @@ function Sidebar() {
       </div>
 
       <div className="sidebar-footer">
-        <div className="sidebar-user">
+  <NotificationBell />
+  <div className="sidebar-user">
           <span className="sidebar-avatar">{initials}</span>
           <span className="sidebar-user-info link-label">
             <span className="sidebar-user-name">{user?.name}</span>
