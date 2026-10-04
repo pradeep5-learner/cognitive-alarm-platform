@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database.connection import Base, engine
 from app.routes import auth_routes, alarm_routes, challenge_routes, wakeup_routes, admin_routes, coach_routes, habit_routes, behavior_routes, difficulty_routes, recommendation_routes, productivity_routes
 from app.models import user, alarm, challenge, wakeup_log, habit_score
-from app.models import user, alarm, challenge, wakeup_log, habit_score, productivity_log
+from app.models import user, alarm, challenge, wakeup_log, habit_score, productivity_log, rl_agent_state
 
 Base.metadata.create_all(bind=engine)
 

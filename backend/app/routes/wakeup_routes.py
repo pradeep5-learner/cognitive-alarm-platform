@@ -11,6 +11,7 @@ from app.models.user import User
 from app.schemas.wakeup_schema import WakeUpStartResponse, WakeUpSubmitRequest, WakeUpSnoozeRequest
 from app.database.ml_difficulty_model import get_recommended_difficulty,pick_weighted_challenge_type, calculate_engagement_status, apply_engagement_optimization
 import random
+from app.database.rl_difficulty_agent import choose_action, apply_action, compute_reward, update_q
 
 router = APIRouter(prefix="/wakeup", tags=["Wake-Up Verification"])
 
@@ -55,6 +56,8 @@ def start_wakeup_verification(alarm_id: int, continue_from: int = None, db: Sess
     
     engagement_status = calculate_engagement_status(db, current_user.id)
     difficulty, required_streak = apply_engagement_optimization(difficulty, required_streak, engagement_status)
+    rl_action_chosen, rl_q_values = choose_action(db, current_user.id)
+    difficulty = apply_action(difficulty, rl_action_chosen)
     question, answer = generate_challenge(challenge_type, difficulty)
 
     new_challenge = Challenge(
@@ -72,7 +75,8 @@ def start_wakeup_verification(alarm_id: int, continue_from: int = None, db: Sess
         alarm_id=alarm.id,
         challenge_id=new_challenge.id,
         correct_streak=correct_streak,
-        required_streak=required_streak
+        required_streak=required_streak,
+        rl_action=rl_action_chosen
     )
     db.add(new_log)
     db.commit()
@@ -114,6 +118,9 @@ def submit_wakeup_answer(submission: WakeUpSubmitRequest, db: Session = Depends(
     if fully_dismissed:
         log.is_verified = True
         log.verified_at = datetime.now()
+        reward = compute_reward(log.attempts, log.snooze_count, True)
+        if log.rl_action:
+            update_q(db, current_user.id, log.rl_action, reward)
 
     db.commit()
 

@@ -35,3 +35,16 @@ from app.database.ml_difficulty_model import calculate_engagement_status
 @router.get("/engagement")
 def get_engagement_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return calculate_engagement_status(db, current_user.id)
+
+from app.database.rl_difficulty_agent import get_or_create_state, ACTIONS
+from app.schemas.rl_agent_schema import RLAgentStatus
+
+@router.get("/rl-agent", response_model=RLAgentStatus)
+def get_rl_agent_status(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    states = {a: get_or_create_state(db, current_user.id, a) for a in ACTIONS}
+    best = max(states, key=lambda a: states[a].q_value)
+    return {
+        "q_values": {a: round(s.q_value, 3) for a, s in states.items()},
+        "pulls": {a: s.pulls for a, s in states.items()},
+        "current_best_action": best
+    }

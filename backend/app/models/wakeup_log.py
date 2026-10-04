@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, Boolean, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, DateTime
 from sqlalchemy.sql import func
 from app.database.connection import Base
 
@@ -16,3 +16,4 @@ class WakeUpLog(Base):
     required_streak = Column(Integer, default=2)
     started_at = Column(DateTime(timezone=True), server_default=func.now())
     verified_at = Column(DateTime(timezone=True), nullable=True)
+    rl_action = Column(String, nullable=True)
