@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Navbar from "../components/Navbar";
+import AppLayout from "../components/AppLayout";
 import { useAuth } from "../context/AuthContext";
 import { getMyAssignedUsers } from "../services/coachService";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 function CoachDashboard() {
   const { user: currentUser } = useAuth();
@@ -30,19 +31,17 @@ function CoachDashboard() {
 
   if (loading) {
     return (
-      <div className="dashboard-page">
-        <Navbar />
+      <AppLayout>
         <div className="dashboard-content"><p>Loading your users...</p></div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="dashboard-page">
-      <Navbar />
+    <AppLayout>
       <div className="dashboard-content">
         <div className="dashboard-header">
-          <h1 className="dashboard-title">Coach Dashboard 🧑‍⚕️</h1>
+          <h1 className="dashboard-title">Coach Dashboard</h1>
           <p className="dashboard-subtitle">Track your assigned users' wake-up habits</p>
         </div>
 
@@ -80,7 +79,10 @@ function CoachDashboard() {
   Difficulty: <strong>{u.difficulty_preference || "Not set"}</strong>
   {u.trend !== "insufficient_data" && (
     <span className={`coach-trend coach-trend-${u.trend}`}>
-      {u.trend === "improving" ? "📈 Improving" : u.trend === "declining" ? "📉 Declining" : "➡️ Stable"}
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+  {u.trend === "improving" ? <TrendingUp size={12} /> : u.trend === "declining" ? <TrendingDown size={12} /> : <Minus size={12} />}
+  {u.trend === "improving" ? "Improving" : u.trend === "declining" ? "Declining" : "Stable"}
+</span>
     </span>
   )}
 </div>
@@ -89,7 +91,7 @@ function CoachDashboard() {
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

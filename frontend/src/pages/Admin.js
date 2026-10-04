@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import Navbar from "../components/Navbar";
+import AppLayout from "../components/AppLayout";
 import { useAuth } from "../context/AuthContext";
 import { getAllUsers, updateUserRole, getPlatformStats, assignCoach } from "../services/adminService";
 
@@ -55,19 +55,17 @@ function Admin() {
 
   if (loading) {
     return (
-      <div className="dashboard-page">
-        <Navbar />
+      <AppLayout>
         <div className="dashboard-content"><p>Loading admin panel...</p></div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="dashboard-page">
-      <Navbar />
+    <AppLayout>
       <div className="dashboard-content">
         <div className="dashboard-header">
-          <h1 className="dashboard-title">Admin Panel 🔐</h1>
+          <h1 className="dashboard-title">Admin Panel</h1>
           <p className="dashboard-subtitle">Platform-wide management and stats</p>
         </div>
 
@@ -161,7 +159,7 @@ function Admin() {
           ))}
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

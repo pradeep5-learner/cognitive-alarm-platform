@@ -4,7 +4,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar
 } from "recharts";
-import Navbar from "../components/Navbar";
+import AppLayout from "../components/AppLayout";
 import {
   getHabitScore, getHabitScoreHistory, getBehavioralAnalytics,
   getRecommendations, getDifficultyPrediction
@@ -12,6 +12,10 @@ import {
 import { getProductivityCorrelation } from "../services/productivityService";
 import { getChallengePerformance } from "../services/habitService";
 import { getSleepPatterns } from "../services/habitService";
+import { getDailyStreak } from "../services/habitService";
+import { Flame } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+
 
 function HabitInsights() {
   const [score, setScore] = useState(null);
@@ -23,11 +27,12 @@ function HabitInsights() {
   const [productivity, setProductivity] = useState(null);
   const [challengePerf, setChallengePerf] = useState(null);
   const [sleepPattern, setSleepPattern] = useState(null);
+  const [streak, setStreak] = useState(null);
 
   useEffect(() => {
     const loadAll = async () => {
       try {
-        const [scoreRes, historyRes, analyticsRes, recsRes, diffRes, prodRes, perfRes, sleepRes] = await Promise.all([
+        const [scoreRes, historyRes, analyticsRes, recsRes, diffRes, prodRes, perfRes, sleepRes, streakRes] = await Promise.all([
           getHabitScore(),
           getHabitScoreHistory(),
           getBehavioralAnalytics(),
@@ -36,6 +41,7 @@ function HabitInsights() {
           getProductivityCorrelation(),
           getChallengePerformance(),
           getSleepPatterns(),
+          getDailyStreak(),
         ]);
         setScore(scoreRes.data);
         setHistory(
@@ -51,6 +57,7 @@ function HabitInsights() {
         setProductivity(prodRes.data);
         setChallengePerf(perfRes.data.performance);
         setSleepPattern(sleepRes.data);
+        setStreak(streakRes.data);
       } catch (err) {
         toast.error("Could not load habit insights");
       } finally {
@@ -62,21 +69,36 @@ function HabitInsights() {
 
   if (loading) {
     return (
-      <div className="dashboard-page">
-        <Navbar />
+      <AppLayout>
         <div className="dashboard-content"><p>Loading your insights...</p></div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="dashboard-page">
-      <Navbar />
+    <AppLayout>
       <div className="dashboard-content">
         <div className="dashboard-header">
           <h1 className="dashboard-title">Habit Insights 📊</h1>
           <p className="dashboard-subtitle">Your wake-up performance, powered by real behavioral data</p>
         </div>
+        
+        {streak && (
+          <div className="streak-hero">
+            <div className="streak-hero-main">
+              <span className="streak-hero-fire">
+  <Flame size={30} color="#FF9E5E" fill="#FF9E5E" strokeWidth={1.5} />
+</span>
+              <div>
+                <div className="streak-hero-number">{streak.current_streak}</div>
+                <div className="streak-hero-label">day streak</div>
+              </div>
+            </div>
+            <div className="streak-hero-best">
+              Longest streak: <strong>{streak.longest_streak} days</strong>
+            </div>
+          </div>
+        )}
 
         {score && (
           <div className="habit-score-hero">
@@ -215,9 +237,9 @@ function HabitInsights() {
     </div>
     {difficultyPred.trend !== "insufficient_data" && (
       <div className={`trend-badge trend-${difficultyPred.trend}`} style={{ marginBottom: 28 }}>
-        <span className="trend-icon">
-          {difficultyPred.trend === "improving" ? "📈" : difficultyPred.trend === "declining" ? "📉" : "➡️"}
-        </span>
+        <span className="trend-icon" style={{ display: "inline-flex" }}>
+  {difficultyPred.trend === "improving" ? <TrendingUp size={16} /> : difficultyPred.trend === "declining" ? <TrendingDown size={16} /> : <Minus size={16} />}
+</span>
         <span>{difficultyPred.trend_message}</span>
       </div>
     )}
@@ -258,7 +280,7 @@ function HabitInsights() {
           ))}
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

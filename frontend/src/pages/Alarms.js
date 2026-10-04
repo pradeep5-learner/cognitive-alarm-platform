@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
+import AppLayout from "../components/AppLayout";
 import { getAlarms, createAlarm, updateAlarm, deleteAlarm } from "../services/alarmService";
 import { formatTime } from "../utils/formatTime";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { getSmartScheduleSuggestion } from "../services/wakeupService";
-
+import { Lightbulb } from "lucide-react";
 
 function Alarms() {
   const [alarms, setAlarms] = useState([]);
@@ -111,8 +111,7 @@ const acceptSuggestion = async (alarmId, newTime) => {
 };
 
   return (
-    <div className="dashboard-page">
-      <Navbar />
+    <AppLayout>
       <div className="dashboard-content">
         <div className="dashboard-header">
           <h1 className="dashboard-title">Your Alarms ⏰</h1>
@@ -169,7 +168,9 @@ const acceptSuggestion = async (alarmId, newTime) => {
             <div className={`alarm-item ${!alarm.is_active ? "alarm-inactive" : ""}`} key={alarm.id}>
               {suggestions[alarm.id] && (
                 <div className="smart-suggestion-banner">
-                  <span>🧠 Suggestion: ring at <strong>{suggestions[alarm.id].suggested_time}</strong> instead — {suggestions[alarm.id].reason}</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+  <Lightbulb size={15} color="#6C56E8" /> Suggestion: ring at <strong>{suggestions[alarm.id].suggested_time}</strong> instead — {suggestions[alarm.id].reason}
+</span>
                   <button className="btn-edit" onClick={() => acceptSuggestion(alarm.id, suggestions[alarm.id].suggested_time)}>
                     Accept
                   </button>
@@ -202,7 +203,7 @@ const acceptSuggestion = async (alarmId, newTime) => {
           ))}
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

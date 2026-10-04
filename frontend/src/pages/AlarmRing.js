@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { startWakeUp, submitWakeUpAnswer, snoozeWakeUp, timeoutWakeUp } from "../services/wakeupService";
+import { Moon, Bell, CheckCircle2 } from "lucide-react";
 
 function AlarmRing() {
   const { alarmId } = useParams();
@@ -136,7 +137,9 @@ function AlarmRing() {
     return (
       <div className="ring-page">
         <div className="ring-card ring-success">
-          <div className="ring-success-icon">✅</div>
+          <div className="ring-success-icon" style={{ display: "flex", justifyContent: "center" }}>
+  <CheckCircle2 size={52} color="#2F9E8F" strokeWidth={1.5} />
+</div>
           <h2>You're awake!</h2>
           <p>Solved in {attempts} attempt{attempts !== 1 ? "s" : ""}, after {snoozeCount} snooze{snoozeCount !== 1 ? "s" : ""}.</p>
           <button className="btn-primary" style={{ width: "auto", padding: "12px 28px" }} onClick={() => navigate("/alarms")}>
@@ -153,7 +156,9 @@ function AlarmRing() {
   return (
     <div className="ring-page">
       <div className={`ring-card ${wrongShake ? "ring-shake" : ""}`}>
-        <div className="ring-time">⏰ Alarm Ringing</div>
+        <div className="ring-time" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+  <Bell size={14} /> Alarm Ringing
+</div>
 
         <div className="streak-row">
           {Array.from({ length: session.required_streak }).map((_, i) => (
@@ -193,9 +198,9 @@ function AlarmRing() {
           <button className="btn-primary" type="submit">Submit Answer</button>
         </form>
 
-        <button className="btn-snooze" onClick={handleSnooze}>
-          😴 Snooze (new challenge)
-        </button>
+        <button className="btn-snooze" onClick={handleSnooze} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+  <Moon size={15} /> Snooze (new challenge)
+</button>
 
         {attempts > 0 && (
           <p className="ring-attempts">Attempts so far: {attempts}</p>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Navbar from "../components/Navbar";
+import AppLayout from "../components/AppLayout";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
@@ -52,13 +52,12 @@ function Profile() {
   };
 
   return (
-    <div className="dashboard-page">
-      <Navbar />
+    <AppLayout>
       <div className="dashboard-content">
         <div className="dashboard-header">
-          <h1 className="dashboard-title">Your Profile ⚙️</h1>
+          <h1 className="dashboard-title">Your Profile</h1>
           <p className="dashboard-subtitle">Update your wake-up and habit preferences</p>
-        </div>
+        </div>      
 
 
         <form className="profile-form" onSubmit={handleSubmit}>
@@ -143,7 +142,7 @@ function Profile() {
           </button>
         </form>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 
