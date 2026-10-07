@@ -15,8 +15,8 @@ def test_create_alarm(client):
 
 
 def test_get_alarms_returns_only_own(client):
-    headers_a = get_auth_headers(client, "usera@pytest.com", "pass123")
-    headers_b = get_auth_headers(client, "userb@pytest.com", "pass123")
+    headers_a = get_auth_headers(client, "usera@pytest.com", "pass12345")
+    headers_b = get_auth_headers(client, "userb@pytest.com", "pass12345")
 
     client.post("/alarms/", json={"label": "A's Alarm", "time": "07:00:00", "alarm_type": "daily"}, headers=headers_a)
     client.post("/alarms/", json={"label": "B's Alarm", "time": "08:00:00", "alarm_type": "daily"}, headers=headers_b)
@@ -28,7 +28,7 @@ def test_get_alarms_returns_only_own(client):
 
 
 def test_update_alarm_partial(client):
-    headers = get_auth_headers(client, "updatetest@pytest.com", "pass123")
+    headers = get_auth_headers(client, "updatetest@pytest.com", "pass12345")
     create_res = client.post("/alarms/", json={"label": "Original", "time": "06:00:00", "alarm_type": "daily"}, headers=headers)
     alarm_id = create_res.json()["id"]
 
@@ -40,7 +40,7 @@ def test_update_alarm_partial(client):
 
 
 def test_delete_alarm(client):
-    headers = get_auth_headers(client, "deletetest@pytest.com", "pass123")
+    headers = get_auth_headers(client, "deletetest@pytest.com", "pass12345")
     create_res = client.post("/alarms/", json={"label": "To Delete", "time": "09:00:00", "alarm_type": "daily"}, headers=headers)
     alarm_id = create_res.json()["id"]
 

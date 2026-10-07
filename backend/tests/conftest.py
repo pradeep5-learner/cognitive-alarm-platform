@@ -23,3 +23,10 @@ def setup_test_db():
 @pytest.fixture
 def client():
     return TestClient(app)
+
+from app.database.rate_limiter import limiter
+
+@pytest.fixture(autouse=True)
+def reset_rate_limiter():
+    limiter.reset()
+    yield

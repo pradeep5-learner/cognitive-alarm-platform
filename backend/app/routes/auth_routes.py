@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.database.connection import SessionLocal
 from app.models.user import User
@@ -6,6 +6,7 @@ from app.schemas.user_schema import UserCreate, UserResponse, UserLogin, Token, 
 from app.database.hashing import hash_password, verify_password
 from app.database.jwt_handler import create_access_token
 from app.database.auth_dependency import get_current_user, require_role
+from app.database.rate_limiter import limiter
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -33,7 +34,8 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 @router.post("/login", response_model=Token)
-def login_user(credentials: UserLogin, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def login_user(request: Request, credentials: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == credentials.email).first()
 
     if not user or not verify_password(credentials.password, user.hashed_password):
