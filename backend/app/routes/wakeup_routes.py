@@ -12,6 +12,8 @@ from app.schemas.wakeup_schema import WakeUpStartResponse, WakeUpSubmitRequest, 
 from app.database.ml_difficulty_model import get_recommended_difficulty,pick_weighted_challenge_type, calculate_engagement_status, apply_engagement_optimization
 import random
 from app.database.rl_difficulty_agent import choose_action, apply_action, compute_reward, update_q
+from app.database.session_history import get_recent_sessions
+
 
 router = APIRouter(prefix="/wakeup", tags=["Wake-Up Verification"])
 
@@ -35,6 +37,9 @@ def start_wakeup_verification(alarm_id: int, continue_from: int = None, db: Sess
     alarm = db.query(Alarm).filter(Alarm.id == alarm_id, Alarm.user_id == current_user.id).first()
     if not alarm:
         raise HTTPException(status_code=404, detail="Alarm not found")
+    if alarm.alarm_type == "one_time" and alarm.is_active:
+        alarm.is_active = False
+        db.commit()
 
     correct_streak = 0
     required_streak = random.choice([1, 2])
@@ -185,3 +190,7 @@ def timeout_wakeup(request: WakeUpSnoozeRequest, db: Session = Depends(get_db), 
     db.commit()
 
     return {"message": "Time's up — streak reset", "correct_streak": log.correct_streak}
+
+@router.get("/history")
+def get_wakeup_history(limit: int = 15, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return get_recent_sessions(db, current_user.id, min(max(limit, 1), 50))

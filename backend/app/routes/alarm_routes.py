@@ -6,6 +6,9 @@ from app.database.auth_dependency import get_current_user
 from app.models.alarm import Alarm
 from app.models.user import User
 from app.schemas.alarm_schema import AlarmCreate, AlarmResponse, AlarmUpdate
+from app.models.wakeup_log import WakeUpLog
+from app.models.challenge import Challenge
+
 
 router = APIRouter(prefix="/alarms", tags=["Alarms"])
 
@@ -60,6 +63,13 @@ def delete_alarm(alarm_id: int, db: Session = Depends(get_db), current_user: Use
     alarm = db.query(Alarm).filter(Alarm.id == alarm_id, Alarm.user_id == current_user.id).first()
     if not alarm:
         raise HTTPException(status_code=404, detail="Alarm not found")
+
+    logs = db.query(WakeUpLog).filter(WakeUpLog.alarm_id == alarm_id).all()
+    challenge_ids = [log.challenge_id for log in logs]
+
+    db.query(WakeUpLog).filter(WakeUpLog.alarm_id == alarm_id).delete(synchronize_session=False)
+    if challenge_ids:
+        db.query(Challenge).filter(Challenge.id.in_(challenge_ids)).delete(synchronize_session=False)
 
     db.delete(alarm)
     db.commit()

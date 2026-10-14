@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.database.connection import SessionLocal
@@ -9,6 +9,12 @@ from app.models.wakeup_log import WakeUpLog
 from app.schemas.admin_schema import CoachUserSummary
 from app.database.habit_scoring import calculate_habit_score
 from app.database.ml_difficulty_model import analyze_learning_trend
+from app.database.coach_detail import build_user_detail
+from fastapi.responses import StreamingResponse
+from app.database.report_generator import gather_report_data
+from app.database.pdf_report import generate_pdf_report
+from app.database.excel_report import generate_excel_report
+
 
 router = APIRouter(prefix="/coach", tags=["Wellness Coach"])
 
@@ -49,3 +55,34 @@ def get_my_assigned_users(db: Session = Depends(get_db), current_user: User = De
         })
 
     return summaries
+
+@router.get("/users/{user_id}/details")
+def get_assigned_user_details(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_role(["wellness_coach"]))):
+    target = db.query(User).filter(User.id == user_id, User.coach_id == current_user.id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found or not assigned to you")
+    return build_user_detail(db, target)
+
+def _get_assigned_user(db, coach, user_id):
+    target = db.query(User).filter(User.id == user_id, User.coach_id == coach.id).first()
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found or not assigned to you")
+    return target
+
+
+@router.get("/users/{user_id}/report/pdf")
+def coach_download_user_pdf(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_role(["wellness_coach"]))):
+    target = _get_assigned_user(db, current_user, user_id)
+    buffer = generate_pdf_report(gather_report_data(db, target.id))
+    return StreamingResponse(buffer, media_type="application/pdf",
+                             headers={"Content-Disposition": f"attachment; filename=user_{target.id}_report.pdf"})
+
+
+@router.get("/users/{user_id}/report/excel")
+def coach_download_user_excel(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_role(["wellness_coach"]))):
+    target = _get_assigned_user(db, current_user, user_id)
+    buffer = generate_excel_report(gather_report_data(db, target.id))
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename=user_{target.id}_report.xlsx"})

@@ -1453,6 +1453,7 @@ button, input, select, textarea {
   position: sticky;
   top: 0;
   height: 100vh;
+  z-index: 40;
 }
 
 .sidebar-brand {
@@ -1584,6 +1585,8 @@ button, input, select, textarea {
 .app-main {
   flex: 1;
   min-width: 0;
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 880px) {
@@ -1814,4 +1817,229 @@ button, input, select, textarea {
 
 .btn-report:hover {
   background: rgba(108, 86, 232, 0.15);
+}
+
+.role-selector {
+  display: flex;
+  gap: 4px;
+  background: #F1EDFA;
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 22px;
+}
+
+.role-option {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 9px 6px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--mist);
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.role-option:hover {
+  color: var(--ink);
+}
+
+.role-option.active {
+  background: #fff;
+  color: var(--violet);
+  box-shadow: 0 2px 8px rgba(108, 86, 232, 0.18);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--mist);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 18px;
+  transition: color 0.15s;
+}
+
+.back-link:hover {
+  color: var(--violet);
+}
+
+.detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.detail-chip {
+  background: rgba(108, 86, 232, 0.08);
+  color: var(--violet-dark);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+}
+
+.insight-note {
+  font-size: 13.5px;
+  color: var(--mist);
+  line-height: 1.5;
+  margin: 0 0 14px 0;
+}
+
+.coach-user-card {
+  cursor: pointer;
+}
+
+.coach-card-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--violet);
+}
+
+.session-table {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+
+.session-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 0.7fr 0.7fr 1fr;
+  gap: 8px;
+  padding: 13px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--ink);
+  align-items: center;
+}
+
+.session-row.session-head {
+  background: #F8F6FC;
+  border-top: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--mist);
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.status-done {
+  background: rgba(47, 158, 143, 0.12);
+  color: #1F7A6D;
+}
+
+.status-open {
+  background: rgba(255, 111, 94, 0.12);
+  color: #C94A3A;
+}
+
+.dash-split {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.dash-split > * {
+  margin-bottom: 0;
+}
+
+.chart-title {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0 0 8px 0;
+}
+
+@media (max-width: 1180px) {
+  .dash-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.monitor-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 16px 0 24px;
+}
+
+.monitor-split .chart-card {
+  margin-bottom: 0;
+}
+
+.monitor-top-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 0;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.monitor-top-row:first-of-type {
+  border-top: none;
+}
+
+.monitor-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1.5fr 0.8fr 0.6fr 2.6fr;
+  gap: 10px;
+  padding: 13px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--ink);
+  align-items: center;
+}
+
+.monitor-row.session-head {
+  background: #F8F6FC;
+  border-top: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--mist);
+}
+
+.monitor-titles {
+  font-size: 12.5px;
+  color: var(--mist);
+  line-height: 1.45;
+}
+
+.prio-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.prio-high { background: rgba(255, 111, 94, 0.14); color: #C94A3A; }
+.prio-medium { background: rgba(255, 182, 72, 0.2); color: #A86A00; }
+.prio-low { background: rgba(47, 158, 143, 0.13); color: #1F7A6D; }
+
+@media (max-width: 1100px) {
+  .monitor-split { grid-template-columns: 1fr; }
 }

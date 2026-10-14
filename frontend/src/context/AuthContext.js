@@ -1,5 +1,7 @@
 import { createContext, useState, useContext, useEffect } from "react";
 import api from "../services/api";
+import { stopRinging } from "../utils/ringtones";
+import { clearRingingAlarm } from "../utils/ringingState";
 
 const AuthContext = createContext();
 
@@ -32,7 +34,9 @@ export function AuthProvider({ children }) {
     setUser(userData);
   };
 
-  const logout = () => {
+    const logout = () => {
+    stopRinging();
+    clearRingingAlarm();
     localStorage.removeItem("token");
     setUser(null);
   };

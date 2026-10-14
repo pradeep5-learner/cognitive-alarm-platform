@@ -55,3 +55,14 @@ def test_delete_alarm(client):
 def test_cannot_access_without_token(client):
     response = client.get("/alarms/")
     assert response.status_code in (401, 403)
+
+def test_delete_alarm_that_has_wakeup_history(client):
+    headers = get_auth_headers(client, "delhistory@pytest.com", "pass12345")
+    alarm_id = client.post("/alarms/", json={"label": "Has History", "time": "06:00:00", "alarm_type": "daily"}, headers=headers).json()["id"]
+    client.post(f"/wakeup/start/{alarm_id}", headers=headers)
+
+    response = client.delete(f"/alarms/{alarm_id}", headers=headers)
+    assert response.status_code == 200
+
+    ids = [a["id"] for a in client.get("/alarms/", headers=headers).json()]
+    assert alarm_id not in ids

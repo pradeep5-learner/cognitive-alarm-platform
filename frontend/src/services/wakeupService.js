@@ -12,3 +12,4 @@ export const timeoutWakeUp = (wakeupLogId) =>
   api.post("/wakeup/timeout", { wakeup_log_id: wakeupLogId });
 export const getAnalytics = () => api.get("/wakeup/analytics");
 export const getSmartScheduleSuggestion = (alarmId) => api.get(`/behavior/smart-schedule/${alarmId}`);
+export const getWakeUpHistory = (limit = 15) => api.get(`/wakeup/history?limit=${limit}`);

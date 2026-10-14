@@ -7,6 +7,9 @@ from app.database.hashing import hash_password, verify_password
 from app.database.jwt_handler import create_access_token
 from app.database.auth_dependency import get_current_user, require_role
 from app.database.rate_limiter import limiter
+import os
+import secrets
+
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -23,10 +26,16 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    if user.role == "admin":
+        expected = os.getenv("ADMIN_SIGNUP_CODE")
+        if not expected or not user.admin_code or not secrets.compare_digest(user.admin_code, expected):
+            raise HTTPException(status_code=403, detail="Invalid admin code")
+
     new_user = User(
         name=user.name,
         email=user.email,
-        hashed_password=hash_password(user.password)
+        hashed_password=hash_password(user.password),
+        role=user.role
     )
     db.add(new_user)
     db.commit()
@@ -41,6 +50,9 @@ def login_user(request: Request, credentials: UserLogin, db: Session = Depends(g
     if not user or not verify_password(credentials.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
+    if credentials.login_as and credentials.login_as != user.role:
+        raise HTTPException(status_code=403, detail="This account isn't registered as the selected user type")
+    
     access_token = create_access_token(data={"sub": user.email, "role": user.role})
     return {"access_token": access_token, "token_type": "bearer"}
 

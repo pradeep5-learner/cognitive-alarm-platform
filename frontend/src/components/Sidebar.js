@@ -50,13 +50,15 @@ function Sidebar() {
     navigate("/login");
   };
 
-  const links = [
-    { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
-    { to: "/alarms", label: "Alarms", icon: "alarms" },
-    { to: "/insights", label: "Insights", icon: "insights" },
-    { to: "/profile", label: "Profile", icon: "profile" },
-  ];
-  if (user?.role === "wellness_coach") links.push({ to: "/coach-dashboard", label: "My Users", icon: "coach" });
+  const isCoach = user?.role === "wellness_coach";
+  const links = isCoach
+    ? [{ to: "/coach-dashboard", label: "My Users", icon: "coach" }]
+    : [
+        { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
+        { to: "/alarms", label: "Alarms", icon: "alarms" },
+        { to: "/insights", label: "Insights", icon: "insights" },
+        { to: "/profile", label: "Profile", icon: "profile" },
+      ];
   if (user?.role === "admin") links.push({ to: "/admin", label: "Admin", icon: "admin" });
 
   const initials = (user?.name || "?").trim().split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
@@ -70,7 +72,7 @@ function Sidebar() {
 
       <div className="sidebar-nav">
         {links.map((l) => (
-          <Link key={l.to} to={l.to} className={`sidebar-link ${location.pathname === l.to ? "active" : ""}`}>
+          <Link key={l.to} to={l.to} className={`sidebar-link ${location.pathname === l.to || location.pathname.startsWith(l.to + "/") ? "active" : ""}`}>
             {icons[l.icon]}
             <span className="link-label">{l.label}</span>
           </Link>

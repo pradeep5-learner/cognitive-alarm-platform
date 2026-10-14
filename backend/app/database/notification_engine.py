@@ -5,7 +5,7 @@ from app.models.alarm import Alarm
 from app.models.wakeup_log import WakeUpLog
 from app.database.habit_scoring import calculate_habit_score, calculate_daily_streak
 from app.database.ml_difficulty_model import calculate_engagement_status
-
+from app.database.alarm_schedule import rings_on_weekday
 
 def already_notified_today(db, user_id, notif_type):
     today_start = datetime.combine(date.today(), datetime.min.time())
@@ -47,6 +47,8 @@ def check_wakeup_reminder(db, user):
     now = datetime.now()
     alarms = db.query(Alarm).filter(Alarm.user_id == user.id, Alarm.is_active == True).all()
     for alarm in alarms:
+        if not rings_on_weekday(alarm.alarm_type, now.weekday()):
+            continue
         alarm_minutes = alarm.time.hour * 60 + alarm.time.minute
         now_minutes = now.hour * 60 + now.minute
         diff = alarm_minutes - now_minutes

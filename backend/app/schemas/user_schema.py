@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 import datetime
-from typing import Optional
+from typing import Optional, Literal
 
 
 from pydantic import BaseModel, EmailStr, Field
@@ -9,6 +9,8 @@ class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str = Field(min_length=8)
+    role: Literal["user", "wellness_coach", "admin"] = "user"
+    admin_code: Optional[str] = None
 
 class UserResponse(BaseModel):
     id: int
@@ -19,6 +21,7 @@ class UserResponse(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    login_as: Optional[Literal["user", "wellness_coach", "admin"]] = None
 
 class Token(BaseModel):
     access_token: str

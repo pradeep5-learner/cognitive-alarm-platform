@@ -48,3 +48,14 @@ def test_cannot_start_wakeup_for_others_alarm(client):
 
     response = client.post(f"/wakeup/start/{alarm_id}", headers=headers_b)
     assert response.status_code == 404
+
+def test_history_returns_own_sessions(client):
+    headers = get_auth_headers(client, "historytest@pytest.com")
+    alarm_id = client.post("/alarms/", json={"label": "History Alarm", "time": "06:00:00", "alarm_type": "daily"}, headers=headers).json()["id"]
+    client.post(f"/wakeup/start/{alarm_id}", headers=headers)
+
+    res = client.get("/wakeup/history", headers=headers)
+    assert res.status_code == 200
+    sessions = res.json()
+    assert len(sessions) >= 1
+    assert sessions[0]["alarm_label"] == "History Alarm"

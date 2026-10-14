@@ -6,8 +6,7 @@ import {
 } from "recharts";
 import AppLayout from "../components/AppLayout";
 import {
-  getHabitScore, getHabitScoreHistory, getBehavioralAnalytics,
-  getRecommendations, getDifficultyPrediction
+  getHabitScore, getHabitScoreHistory, getBehavioralAnalytics, getDifficultyPrediction
 } from "../services/habitService";
 import { getProductivityCorrelation } from "../services/productivityService";
 import { getChallengePerformance } from "../services/habitService";
@@ -26,7 +25,6 @@ function HabitInsights() {
   const [score, setScore] = useState(null);
   const [history, setHistory] = useState([]);
   const [analytics, setAnalytics] = useState(null);
-  const [recommendations, setRecommendations] = useState([]);
   const [difficultyPred, setDifficultyPred] = useState(null);
   const [loading, setLoading] = useState(true);
   const [productivity, setProductivity] = useState(null);
@@ -38,11 +36,10 @@ function HabitInsights() {
   useEffect(() => {
     const loadAll = async () => {
       try {
-        const [scoreRes, historyRes, analyticsRes, recsRes, diffRes, prodRes, perfRes, sleepRes, streakRes, rlRes] = await Promise.all([
+        const [scoreRes, historyRes, analyticsRes, diffRes, prodRes, perfRes, sleepRes, streakRes, rlRes] = await Promise.all([
           getHabitScore(),
           getHabitScoreHistory(),
           getBehavioralAnalytics(),
-          getRecommendations(),
           getDifficultyPrediction(),
           getProductivityCorrelation(),
           getChallengePerformance(),
@@ -59,7 +56,6 @@ function HabitInsights() {
           }))
         );
         setAnalytics(analyticsRes.data);
-        setRecommendations(recsRes.data.recommendations);
         setDifficultyPred(diffRes.data);
         setProductivity(prodRes.data);
         setChallengePerf(perfRes.data.performance);
@@ -320,15 +316,7 @@ const handleDownloadExcel = async () => {
           </>
         )}
 
-        <h2 className="section-heading">Recommendations</h2>
-        <div className="recs-list">
-          {recommendations.map((rec, i) => (
-            <div className={`rec-card rec-${rec.priority}`} key={i}>
-              <div className="rec-title">{rec.title}</div>
-              <div className="rec-message">{rec.message}</div>
-            </div>
-          ))}
-        </div>
+        
       </div>
     </AppLayout>
   );

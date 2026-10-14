@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { startWakeUp, submitWakeUpAnswer, snoozeWakeUp, timeoutWakeUp } from "../services/wakeupService";
 import { Moon, Bell, CheckCircle2 } from "lucide-react";
+import { startWakeUp, submitWakeUpAnswer, snoozeWakeUp, timeoutWakeUp } from "../services/wakeupService";
+import { startRinging, stopRinging, isRinging } from "../utils/ringtones";
+import { getRingingAlarm, clearRingingAlarm } from "../utils/ringingState";
 
 function AlarmRing() {
   const { alarmId } = useParams();
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
 
   const [session, setSession] = useState(null);
   const [answer, setAnswer] = useState("");
@@ -19,8 +22,11 @@ function AlarmRing() {
   const [timeLeft, setTimeLeft] = useState(null);
   const timerRef = useRef(null);
   const sessionTicketRef = useRef(0);
-
   const handleTimeoutRef = useRef();
+
+  useEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
 
   const beginSession = useCallback(async (continueFromId = null) => {
     const myTicket = ++sessionTicketRef.current;
@@ -61,7 +67,15 @@ function AlarmRing() {
       }, 1000);
       timerRef.current = newTimerId;
     } catch (err) {
-      toast.error("Could not start alarm challenge");
+      const status = err.response?.status;
+      if (status === 401 || status === 404) {
+        stopRinging();
+        clearRingingAlarm();
+        toast.error("This alarm is no longer available");
+        navigateRef.current("/alarms");
+      } else {
+        toast.error("Could not start alarm challenge");
+      }
     } finally {
       if (myTicket === sessionTicketRef.current) {
         setLoading(false);
@@ -85,14 +99,31 @@ function AlarmRing() {
   }, [handleTimeout]);
 
   useEffect(() => {
-  beginSession();
-  const cleanupTimer = timerRef;
-  return () => {
-    clearInterval(cleanupTimer.current);
-    sessionTicketRef.current += 1;
-  };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [beginSession]);
+    beginSession();
+    const cleanupTimer = timerRef;
+    return () => {
+      clearInterval(cleanupTimer.current);
+      sessionTicketRef.current += 1;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [beginSession]);
+
+  // After a refresh the sound is gone. Restart it, and retry on the first click
+  // because browsers block audio until the user interacts with the page.
+  useEffect(() => {
+    const ringing = getRingingAlarm();
+    if (!ringing || String(ringing.id) !== String(alarmId) || isRinging()) return;
+
+    startRinging(ringing.ringtone);
+    const retryOnClick = () => {
+      document.removeEventListener("click", retryOnClick);
+      if (!getRingingAlarm()) return;
+      stopRinging();
+      startRinging(ringing.ringtone);
+    };
+    document.addEventListener("click", retryOnClick);
+    return () => document.removeEventListener("click", retryOnClick);
+  }, [alarmId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,14 +133,16 @@ function AlarmRing() {
 
       if (res.data.alarm_dismissed) {
         clearInterval(timerRef.current);
+        stopRinging();
+        clearRingingAlarm();
         setDismissed(true);
-        toast.success("Alarm dismissed — you're fully awake! 🎉");
+        toast.success("Alarm dismissed. You're fully awake! 🎉");
       } else if (res.data.is_correct) {
-        toast.success(`Correct! Streak: ${res.data.correct_streak}/${res.data.required_streak} — one more!`);
+        toast.success(`Correct! Streak: ${res.data.correct_streak}/${res.data.required_streak}, one more!`);
         beginSession(session.wakeup_log_id);
       } else {
         setWrongShake(true);
-        toast.error("Not quite — streak reset, try again");
+        toast.error("Not quite. Streak reset, try again");
         setAnswer("");
         setTimeout(() => setWrongShake(false), 400);
       }
@@ -122,11 +155,17 @@ function AlarmRing() {
     try {
       const res = await snoozeWakeUp(session.wakeup_log_id);
       setSnoozeCount(res.data.snooze_count);
-      toast.info("Snoozed — a new challenge will appear");
+      toast.info("Snoozed. A new challenge will appear");
       beginSession(session.wakeup_log_id);
     } catch (err) {
       toast.error("Could not snooze");
     }
+  };
+
+  const leaveAlarm = () => {
+    stopRinging();
+    clearRingingAlarm();
+    navigate("/alarms");
   };
 
   if (loading) {
@@ -138,8 +177,8 @@ function AlarmRing() {
       <div className="ring-page">
         <div className="ring-card ring-success">
           <div className="ring-success-icon" style={{ display: "flex", justifyContent: "center" }}>
-  <CheckCircle2 size={52} color="#2F9E8F" strokeWidth={1.5} />
-</div>
+            <CheckCircle2 size={52} color="#2F9E8F" strokeWidth={1.5} />
+          </div>
           <h2>You're awake!</h2>
           <p>Solved in {attempts} attempt{attempts !== 1 ? "s" : ""}, after {snoozeCount} snooze{snoozeCount !== 1 ? "s" : ""}.</p>
           <button className="btn-primary" style={{ width: "auto", padding: "12px 28px" }} onClick={() => navigate("/alarms")}>
@@ -150,31 +189,38 @@ function AlarmRing() {
     );
   }
 
-  const timerPercent = session ? (timeLeft / session.time_limit_seconds) * 100 : 100;
+  if (!session) {
+    return (
+      <div className="ring-page">
+        <div className="ring-card">
+          <h2 className="ring-question">Couldn't load the challenge</h2>
+          <p className="ring-attempts" style={{ marginTop: 0, marginBottom: 20 }}>Check your connection and try again.</p>
+          <button className="btn-primary" onClick={() => beginSession()}>Try again</button>
+          <button className="btn-snooze" onClick={leaveAlarm}>Leave alarm</button>
+        </div>
+      </div>
+    );
+  }
+
+  const timerPercent = (timeLeft / session.time_limit_seconds) * 100;
   const timerLow = timeLeft <= 5;
 
   return (
     <div className="ring-page">
       <div className={`ring-card ${wrongShake ? "ring-shake" : ""}`}>
         <div className="ring-time" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-  <Bell size={14} /> Alarm Ringing
-</div>
+          <Bell size={14} /> Alarm Ringing
+        </div>
 
         <div className="streak-row">
           {Array.from({ length: session.required_streak }).map((_, i) => (
-            <div
-              key={i}
-              className={`streak-dot ${i < session.correct_streak ? "streak-dot-filled" : ""}`}
-            />
+            <div key={i} className={`streak-dot ${i < session.correct_streak ? "streak-dot-filled" : ""}`} />
           ))}
           <span className="streak-label">{session.correct_streak}/{session.required_streak} correct in a row</span>
         </div>
 
-        <div className={`timer-bar-track`}>
-          <div
-            className={`timer-bar-fill ${timerLow ? "timer-bar-low" : ""}`}
-            style={{ width: `${timerPercent}%` }}
-          />
+        <div className="timer-bar-track">
+          <div className={`timer-bar-fill ${timerLow ? "timer-bar-low" : ""}`} style={{ width: `${timerPercent}%` }} />
         </div>
         <div className={`timer-text ${timerLow ? "timer-text-low" : ""}`}>{timeLeft}s remaining</div>
 
@@ -199,12 +245,10 @@ function AlarmRing() {
         </form>
 
         <button className="btn-snooze" onClick={handleSnooze} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
-  <Moon size={15} /> Snooze (new challenge)
-</button>
+          <Moon size={15} /> Snooze (new challenge)
+        </button>
 
-        {attempts > 0 && (
-          <p className="ring-attempts">Attempts so far: {attempts}</p>
-        )}
+        {attempts > 0 && <p className="ring-attempts">Attempts so far: {attempts}</p>}
       </div>
     </div>
   );

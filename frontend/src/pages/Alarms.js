@@ -3,9 +3,10 @@ import AppLayout from "../components/AppLayout";
 import { getAlarms, createAlarm, updateAlarm, deleteAlarm } from "../services/alarmService";
 import { formatTime } from "../utils/formatTime";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
 import { getSmartScheduleSuggestion } from "../services/wakeupService";
 import { Lightbulb } from "lucide-react";
+import { RINGTONE_OPTIONS } from "../utils/ringtones";
+import { SCHEDULE_LABELS, nextRingLabel } from "../utils/alarmSchedule";
 
 function Alarms() {
   const [alarms, setAlarms] = useState([]);
@@ -13,9 +14,9 @@ function Alarms() {
   const [time, setTime] = useState("");
   const [alarmType, setAlarmType] = useState("daily");
   const [editingId, setEditingId] = useState(null);
-  const navigate = useNavigate();
   const [suggestions, setSuggestions] = useState({});
-
+  const [ringtone, setRingtone] = useState("classic");
+  
   const loadAlarms = async () => {
   try {
     const res = await getAlarms();
@@ -35,13 +36,14 @@ function Alarms() {
     setLabel("");
     setTime("");
     setAlarmType("daily");
+    setRingtone("classic");
     setEditingId(null);
   };
 
   const handleSubmit = async (e) => {
   e.preventDefault();
   try {
-    const payload = { label, time: time + ":00", alarm_type: alarmType };
+    const payload = { label, time: time + ":00", alarm_type: alarmType, ringtone };
     if (editingId) {
       await updateAlarm(editingId, payload);
       toast.success("Alarm updated!");
@@ -61,6 +63,7 @@ function Alarms() {
     setLabel(alarm.label);
     setTime(alarm.time.slice(0, 5));
     setAlarmType(alarm.alarm_type);
+    setRingtone(alarm.ringtone || "classic");
   };
 
   const handleDelete = async (id) => {
@@ -110,6 +113,8 @@ const acceptSuggestion = async (alarmId, newTime) => {
   }
 };
 
+
+
   return (
     <AppLayout>
       <div className="dashboard-content">
@@ -144,6 +149,11 @@ const acceptSuggestion = async (alarmId, newTime) => {
             <option value="weekend">Weekend</option>
             <option value="one_time">One-Time</option>
             <option value="smart_adaptive">Smart Adaptive</option>
+          </select>
+          <select className="form-input" value={ringtone} onChange={(e) => setRingtone(e.target.value)}>
+            {RINGTONE_OPTIONS.map((r) => (
+              <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+            ))}
           </select>
           <button className="btn-primary" type="submit" style={{ width: "auto", padding: "11px 22px" }}>
             {editingId ? "Update Alarm" : "Add Alarm"}
@@ -189,12 +199,12 @@ const acceptSuggestion = async (alarmId, newTime) => {
                   <div>
                     <div className="alarm-time">{formatTime(alarm.time)}</div>
                     <div className="alarm-meta">
-                      {alarm.label} · <span className="alarm-type-badge">{alarm.alarm_type}</span>
+                      {alarm.label} · <span className="alarm-type-badge">{SCHEDULE_LABELS[alarm.alarm_type] || alarm.alarm_type}</span> · {nextRingLabel(alarm)}
                     </div>
                   </div>
                 </div>
                 <div className="alarm-actions">
-                  <button className="btn-ring" onClick={() => navigate(`/alarm-ring/${alarm.id}`)}>Ring Now</button>
+                  
                   <button className="btn-edit" onClick={() => handleEdit(alarm)}>Edit</button>
                   <button className="btn-delete" onClick={() => handleDelete(alarm.id)}>Delete</button>
                 </div>
