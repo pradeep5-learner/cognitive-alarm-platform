@@ -8,7 +8,7 @@ from app.models.user import User
 from app.schemas.alarm_schema import AlarmCreate, AlarmResponse, AlarmUpdate
 from app.models.wakeup_log import WakeUpLog
 from app.models.challenge import Challenge
-
+from app.database.alarm_challenges import encode_challenge_types
 
 router = APIRouter(prefix="/alarms", tags=["Alarms"])
 
@@ -25,7 +25,9 @@ def create_alarm(alarm: AlarmCreate, db: Session = Depends(get_db), current_user
         user_id=current_user.id,
         label=alarm.label,
         time=alarm.time,
-        alarm_type=alarm.alarm_type
+        alarm_type=alarm.alarm_type,
+        ringtone=alarm.ringtone or "classic",
+        challenge_types=encode_challenge_types(alarm.challenge_types),
     )
     db.add(new_alarm)
     db.commit()
@@ -51,6 +53,8 @@ def update_alarm(alarm_id: int, alarm_update: AlarmUpdate, db: Session = Depends
         raise HTTPException(status_code=404, detail="Alarm not found")
 
     update_data = alarm_update.dict(exclude_unset=True)
+    if "challenge_types" in update_data:
+        update_data["challenge_types"] = encode_challenge_types(update_data["challenge_types"])
     for key, value in update_data.items():
         setattr(alarm, key, value)
 

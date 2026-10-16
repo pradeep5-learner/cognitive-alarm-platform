@@ -18,6 +18,14 @@ const TYPES = [
   ["smart_adaptive", "Smart Adaptive"],
 ];
 const WEEK = [["M", 1], ["T", 2], ["W", 3], ["T", 4], ["F", 5], ["S", 6], ["S", 0]];
+const ALL_TYPES = ["math", "riddle", "logic", "memory", "word_game", "pattern", "quiz"];
+const TYPE_LABELS = {
+  math: "Math", riddle: "Riddle", logic: "Logic", memory: "Memory",
+  word_game: "Word game", pattern: "Pattern", quiz: "Quiz",
+};
+
+const describeTypes = (list) =>
+  !list || list.length === ALL_TYPES.length ? "All question types" : list.map((t) => TYPE_LABELS[t] || t).join(", ");
 
 function Alarms() {
   const [alarms, setAlarms] = useState([]);
@@ -25,6 +33,7 @@ function Alarms() {
   const [time, setTime] = useState("06:00");
   const [alarmType, setAlarmType] = useState("daily");
   const [ringtone, setRingtone] = useState("classic");
+  const [challengeTypes, setChallengeTypes] = useState(ALL_TYPES);
   const [editingId, setEditingId] = useState(null);
   const [suggestions, setSuggestions] = useState({});
 
@@ -58,13 +67,22 @@ function Alarms() {
     setTime("06:00");
     setAlarmType("daily");
     setRingtone("classic");
+    setChallengeTypes(ALL_TYPES);
     setEditingId(null);
   };
 
+  const toggleType = (t) =>
+    setChallengeTypes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
+  const allSelected = challengeTypes.length === ALL_TYPES.length;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (challengeTypes.length === 0) {
+      toast.error("Pick at least one question type");
+      return;
+    }
     try {
-      const payload = { label, time: time + ":00", alarm_type: alarmType, ringtone };
+      const payload = { label, time: time + ":00", alarm_type: alarmType, ringtone, challenge_types: challengeTypes };
       if (editingId) {
         await updateAlarm(editingId, payload);
         toast.success("Alarm updated!");
@@ -75,7 +93,7 @@ function Alarms() {
       resetForm();
       loadAlarms();
     } catch (err) {
-      toast.error(err.response?.data?.detail || "Something went wrong");
+      toast.error(err.response?.data?.detail?.[0]?.msg || err.response?.data?.detail || "Something went wrong");
     }
   };
 
@@ -85,6 +103,7 @@ function Alarms() {
     setTime(alarm.time.slice(0, 5));
     setAlarmType(alarm.alarm_type);
     setRingtone(alarm.ringtone || "classic");
+    setChallengeTypes(alarm.challenge_types?.length ? alarm.challenge_types : ALL_TYPES);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -190,6 +209,30 @@ function Alarms() {
               </div>
             </div>
           </div>
+
+          <div className="form-group" style={{ marginTop: 18, marginBottom: 0 }}>
+            <label className="form-label">Question types for this alarm</label>
+            <div className="type-chips">
+              <button
+                type="button"
+                className={`type-chip ${allSelected ? "active" : ""}`}
+                onClick={() => setChallengeTypes(allSelected ? [] : ALL_TYPES)}
+              >
+                All types
+              </button>
+              {ALL_TYPES.map((t) => (
+                <button
+                  type="button"
+                  key={t}
+                  className={`type-chip ${challengeTypes.includes(t) ? "active" : ""}`}
+                  onClick={() => toggleType(t)}
+                >
+                  {TYPE_LABELS[t]}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="alarm-form-actions">
             <button className="btn-primary" type="submit" style={{ width: "auto", padding: "11px 26px", marginTop: 0 }}>
               {editingId ? "Update Alarm" : "Add Alarm"}
@@ -230,6 +273,7 @@ function Alarms() {
                         <span key={i} className={`wd ${ringsOnDay(alarm.alarm_type, day) ? "on" : ""}`}>{letter}</span>
                       ))}
                     </div>
+                    <div className="alarm-types-line">{describeTypes(alarm.challenge_types)}</div>
                   </div>
                 </div>
                 <div className="alarm-actions">

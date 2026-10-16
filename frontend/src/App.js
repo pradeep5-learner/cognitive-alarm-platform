@@ -17,7 +17,7 @@ import CoachDashboard from "./pages/CoachDashboard";
 import CoachUserDetail from "./pages/CoachUserDetail";
 import Reports from "./pages/Reports";
 
-const MEMBER = ["user", "admin"];
+const MEMBER = ["user"];
 const COACH = ["wellness_coach"];
 const ADMIN = ["admin"];
 

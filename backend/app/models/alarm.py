@@ -14,3 +14,4 @@ class Alarm(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     ringtone = Column(String, default="classic")
+    challenge_types = Column(String, default="all")

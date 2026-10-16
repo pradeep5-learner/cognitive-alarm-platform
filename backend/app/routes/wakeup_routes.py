@@ -13,7 +13,7 @@ from app.database.ml_difficulty_model import get_recommended_difficulty,pick_wei
 import random
 from app.database.rl_difficulty_agent import choose_action, apply_action, compute_reward, update_q
 from app.database.session_history import get_recent_sessions
-
+from app.database.alarm_challenges import decode_challenge_types
 
 router = APIRouter(prefix="/wakeup", tags=["Wake-Up Verification"])
 
@@ -57,7 +57,8 @@ def start_wakeup_verification(alarm_id: int, continue_from: int = None, db: Sess
 
     fallback = current_user.difficulty_preference or "medium"
     difficulty, confidence, is_ml = get_recommended_difficulty(db, current_user.id, fallback)
-    challenge_type = pick_weighted_challenge_type(db, current_user.id)
+    allowed_types = decode_challenge_types(alarm.challenge_types)
+    challenge_type = pick_weighted_challenge_type(db, current_user.id, allowed_types)
     
     engagement_status = calculate_engagement_status(db, current_user.id)
     difficulty, required_streak = apply_engagement_optimization(difficulty, required_streak, engagement_status)

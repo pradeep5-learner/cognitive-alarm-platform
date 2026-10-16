@@ -9,6 +9,7 @@ from app.models.wakeup_log import WakeUpLog
 from app.schemas.admin_schema import UserListItem, PlatformStats, RoleUpdateRequest
 from app.database.habit_scoring import calculate_habit_score
 from app.database.admin_analytics import compute_platform_stats, compute_recommendation_monitoring
+from app.database.admin_overview import compute_admin_overview
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -67,3 +68,7 @@ def assign_coach(user_id: int, request: CoachAssignRequest, db: Session = Depend
 @router.get("/recommendations/monitor")
 def monitor_recommendations(db: Session = Depends(get_db), current_user: User = Depends(require_role(["admin"]))):
     return compute_recommendation_monitoring(db)
+
+@router.get("/overview")
+def admin_overview(db: Session = Depends(get_db), current_user: User = Depends(require_role(["admin"]))):
+    return compute_admin_overview(db)

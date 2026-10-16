@@ -55,17 +55,21 @@ function Sidebar() {
     navigate("/login");
   };
 
-  const isCoach = user?.role === "wellness_coach";
-  const links = isCoach
-    ? [{ to: "/coach-dashboard", label: "My Users", icon: "coach" }]
-    : [
-        { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
-        { to: "/alarms", label: "Alarms", icon: "alarms" },
-        { to: "/insights", label: "Insights", icon: "insights" },
-        { to: "/reports", label: "Reports", icon: "reports" },
-        { to: "/profile", label: "Profile", icon: "profile" },
-      ];
-  if (user?.role === "admin") links.push({ to: "/admin", label: "Admin", icon: "admin" });
+  const role = user?.role;
+  let links;
+  if (role === "wellness_coach") {
+    links = [{ to: "/coach-dashboard", label: "My Users", icon: "coach" }];
+  } else if (role === "admin") {
+    links = [{ to: "/admin", label: "Admin Panel", icon: "admin" }];
+  } else {
+    links = [
+      { to: "/dashboard", label: "Dashboard", icon: "dashboard" },
+      { to: "/alarms", label: "Alarms", icon: "alarms" },
+      { to: "/insights", label: "Insights", icon: "insights" },
+      { to: "/reports", label: "Reports", icon: "reports" },
+      { to: "/profile", label: "Profile", icon: "profile" },
+    ];
+  }
 
   const initials = (user?.name || "?").trim().split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { getAlarms } from "../services/alarmService";
 import { startRinging } from "../utils/ringtones";
 import { ringsOnDay } from "../utils/alarmSchedule";
@@ -8,19 +9,26 @@ import { getRingingAlarm, setRingingAlarm } from "../utils/ringingState";
 function AlarmWatcher() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const firedRef = useRef(new Set());
   const locationRef = useRef(location);
+  const roleRef = useRef(null);
+
+  useEffect(() => {
+    roleRef.current = user?.role || null;
+  }, [user]);
 
   useEffect(() => {
     locationRef.current = location;
     const ringing = getRingingAlarm();
-    if (ringing && localStorage.getItem("token") && !location.pathname.startsWith("/alarm-ring")) {
+    if (ringing && roleRef.current === "user" && localStorage.getItem("token") && !location.pathname.startsWith("/alarm-ring")) {
       navigate(`/alarm-ring/${ringing.id}`, { replace: true });
     }
-  }, [location, navigate]);
+  }, [location, navigate, user]);
 
   useEffect(() => {
     const checkAlarms = async () => {
+      if (roleRef.current !== "user") return;
       if (!localStorage.getItem("token")) return;
       if (getRingingAlarm()) return;
 

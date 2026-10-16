@@ -137,12 +137,12 @@ def get_challenge_type_performance(db, user_id, limit=30):
     return performance
 
 
-def pick_weighted_challenge_type(db, user_id):
+def pick_weighted_challenge_type(db, user_id, allowed=None):
     performance = get_challenge_type_performance(db, user_id)
-
-    types = list(performance.keys())
+    types = [t for t in performance.keys() if not allowed or t in allowed]
+    if not types:
+        types = list(performance.keys())
     weights = [performance[t]["skill_weight"] for t in types]
-
     return random.choices(types, weights=weights, k=1)[0]
 
 
