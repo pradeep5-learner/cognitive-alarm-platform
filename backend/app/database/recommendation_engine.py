@@ -106,6 +106,25 @@ def generate_recommendations(db, user_id):
             "priority": "low"
         })
 
+    from app.database.ml_difficulty_model import get_challenge_type_performance
+    perf = get_challenge_type_performance(db, user_id)
+    tried = {t: s for t, s in perf.items() if s["count"] >= 3 and s["avg_attempts"]}
+    if len(tried) >= 2:
+        best = min(tried, key=lambda t: tried[t]["avg_attempts"])
+        worst = max(tried, key=lambda t: tried[t]["avg_attempts"])
+        if tried[worst]["avg_attempts"] - tried[best]["avg_attempts"] >= 0.3:
+            best_label, worst_label = best.replace("_", " "), worst.replace("_", " ")
+            recommendations.append({
+                "category": "challenge_type",
+                "title": f"You're strongest at {best_label} challenges",
+                "message": (
+                    f"You solve {best_label} in {tried[best]['avg_attempts']} attempts on average but need "
+                    f"{tried[worst]['avg_attempts']} for {worst_label}, so your alarms lean toward {best_label}. "
+                    f"Practicing {worst_label} would round out your skills."
+                ),
+                "priority": "low"
+            })
+
     if scores["total_score"] >= 80:
         recommendations.append({
             "category": "positive",

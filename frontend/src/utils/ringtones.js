@@ -38,35 +38,55 @@ function generateBeepDataUri(frequency = 880, beepDuration = 0.4, totalDuration 
   return "data:audio/wav;base64," + btoa(binary);
 }
 
-const RINGTONE_FREQS = {
-  classic: 880,
-  gentle: 600,
-  urgent: 1100,
-  chime: 750,
-};
+const RINGTONE_FREQS = { classic: 880, gentle: 600, urgent: 1100, chime: 750 };
 
 export const RINGTONE_OPTIONS = ["classic", "gentle", "urgent", "chime"];
 
 let audioEl = null;
 let pendingPlay = null;
+let retryHandler = null;
+
+function clearRetry() {
+  if (retryHandler) {
+    document.removeEventListener("click", retryHandler);
+    document.removeEventListener("keydown", retryHandler);
+    retryHandler = null;
+  }
+}
+
+function waitForGestureThenPlay(el) {
+  clearRetry();
+  retryHandler = () => {
+    clearRetry();
+    if (audioEl !== el) return;
+    pendingPlay = el.play();
+    if (pendingPlay) pendingPlay.catch(() => {});
+  };
+  document.addEventListener("click", retryHandler);
+  document.addEventListener("keydown", retryHandler);
+}
 
 export function startRinging(ringtoneName = "classic") {
   if (audioEl) return;
 
   const freq = RINGTONE_FREQS[ringtoneName] || RINGTONE_FREQS.classic;
-  audioEl = new Audio(generateBeepDataUri(freq));
-  audioEl.loop = true;
-  audioEl.volume = 0.7;
+  const el = new Audio(generateBeepDataUri(freq));
+  el.loop = true;
+  el.volume = 0.7;
+  audioEl = el;
 
-  pendingPlay = audioEl.play();
+  pendingPlay = el.play();
   if (pendingPlay) {
     pendingPlay.catch((err) => {
-      if (err.name !== "AbortError") console.log("Audio play blocked:", err);
+      if (audioEl !== el) return;
+      if (err.name === "NotAllowedError") waitForGestureThenPlay(el);
+      else if (err.name !== "AbortError") console.log("Audio play blocked:", err);
     });
   }
 }
 
 export function stopRinging() {
+  clearRetry();
   const el = audioEl;
   const p = pendingPlay;
   audioEl = null;
@@ -80,10 +100,8 @@ export function stopRinging() {
   }
 }
 
-export function setSharedAudioContext() {
-  // kept so existing imports don't break
-}
-
 export function isRinging() {
   return audioEl !== null;
 }
+
+export function setSharedAudioContext() {}

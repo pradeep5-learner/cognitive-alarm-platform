@@ -32,3 +32,15 @@ export function nextRingLabel(alarm, now = new Date()) {
   }
   return "Off";
 }
+
+export function nextRingDate(alarm, now = new Date()) {
+  if (!alarm.is_active) return null;
+  const [h, m] = alarm.time.split(":").map(Number);
+  for (let offset = 0; offset < 8; offset++) {
+    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset);
+    if (!ringsOnDay(alarm.alarm_type, day.getDay())) continue;
+    const ringAt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, m);
+    if (ringAt > now) return ringAt;
+  }
+  return null;
+}

@@ -3,3 +3,7 @@ backend/.env
 backend/__pycache__/
 backend/app/__pycache__/
 **/__pycache__/
+.env
+backend/.env.test
+frontend/node_modules
+frontend/build

@@ -10,3 +10,4 @@ export const getEngagementStatus = () => api.get("/difficulty/engagement");
 export const getSleepPatterns = () => api.get("/behavior/sleep-patterns");
 export const getDailyStreak = () => api.get("/habits/streak");
 export const getRLAgentStatus = () => api.get("/difficulty/rl-agent");
+export const getWeekOverview = () => api.get("/habits/week");

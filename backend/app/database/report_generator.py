@@ -26,7 +26,7 @@ def gather_report_data(db, user_id):
     return {
         "user_name": user.name,
         "user_email": user.email,
-        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "generated_at": datetime.now().strftime("%Y-%m-%d %I:%M %p"),
         "habit_scores": habit_scores,
         "streak": streak,
         "behavior": behavior,

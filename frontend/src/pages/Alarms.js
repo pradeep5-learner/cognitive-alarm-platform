@@ -1,62 +1,83 @@
-import { useState, useEffect } from "react";
-import AppLayout from "../components/AppLayout";
-import { getAlarms, createAlarm, updateAlarm, deleteAlarm } from "../services/alarmService";
-import { formatTime } from "../utils/formatTime";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-toastify";
+import { Lightbulb, Volume2 } from "lucide-react";
+import AppLayout from "../components/AppLayout";
+import TimePicker12 from "../components/TimePicker12";
+import { getAlarms, createAlarm, updateAlarm, deleteAlarm } from "../services/alarmService";
 import { getSmartScheduleSuggestion } from "../services/wakeupService";
-import { Lightbulb } from "lucide-react";
-import { RINGTONE_OPTIONS } from "../utils/ringtones";
-import { SCHEDULE_LABELS, nextRingLabel } from "../utils/alarmSchedule";
+import { formatTime } from "../utils/formatTime";
+import { RINGTONE_OPTIONS, startRinging, stopRinging, isRinging } from "../utils/ringtones";
+import { getRingingAlarm } from "../utils/ringingState";
+import { SCHEDULE_LABELS, nextRingLabel, nextRingDate, ringsOnDay } from "../utils/alarmSchedule";
+
+const TYPES = [
+  ["daily", "Daily"],
+  ["weekday", "Weekday"],
+  ["weekend", "Weekend"],
+  ["one_time", "One-Time"],
+  ["smart_adaptive", "Smart Adaptive"],
+];
+const WEEK = [["M", 1], ["T", 2], ["W", 3], ["T", 4], ["F", 5], ["S", 6], ["S", 0]];
 
 function Alarms() {
   const [alarms, setAlarms] = useState([]);
   const [label, setLabel] = useState("");
-  const [time, setTime] = useState("");
+  const [time, setTime] = useState("06:00");
   const [alarmType, setAlarmType] = useState("daily");
+  const [ringtone, setRingtone] = useState("classic");
   const [editingId, setEditingId] = useState(null);
   const [suggestions, setSuggestions] = useState({});
-  const [ringtone, setRingtone] = useState("classic");
-  
-  const loadAlarms = async () => {
-  try {
-    const res = await getAlarms();
-    setAlarms(res.data);
-    res.data.forEach((alarm) => checkSuggestion(alarm.id));
-  } catch (err) {
-    toast.error("Could not load alarms");
-  }
-};
+
+  const checkSuggestion = useCallback(async (alarmId) => {
+    try {
+      const res = await getSmartScheduleSuggestion(alarmId);
+      if (res.data.has_suggestion) {
+        setSuggestions((prev) => ({ ...prev, [alarmId]: res.data }));
+      }
+    } catch (err) {
+      // not critical
+    }
+  }, []);
+
+  const loadAlarms = useCallback(async () => {
+    try {
+      const res = await getAlarms();
+      setAlarms(res.data);
+      res.data.forEach((a) => checkSuggestion(a.id));
+    } catch (err) {
+      toast.error("Could not load alarms");
+    }
+  }, [checkSuggestion]);
 
   useEffect(() => {
-  loadAlarms();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+    loadAlarms();
+  }, [loadAlarms]);
 
   const resetForm = () => {
     setLabel("");
-    setTime("");
+    setTime("06:00");
     setAlarmType("daily");
     setRingtone("classic");
     setEditingId(null);
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const payload = { label, time: time + ":00", alarm_type: alarmType, ringtone };
-    if (editingId) {
-      await updateAlarm(editingId, payload);
-      toast.success("Alarm updated!");
-    } else {
-      await createAlarm(payload);
-      toast.success("Alarm created!");
+    e.preventDefault();
+    try {
+      const payload = { label, time: time + ":00", alarm_type: alarmType, ringtone };
+      if (editingId) {
+        await updateAlarm(editingId, payload);
+        toast.success("Alarm updated!");
+      } else {
+        await createAlarm(payload);
+        toast.success("Alarm created!");
+      }
+      resetForm();
+      loadAlarms();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || "Something went wrong");
     }
-    resetForm();
-    loadAlarms();
-  } catch (err) {
-    toast.error(err.response?.data?.detail || "Something went wrong");
-  }
-};
+  };
 
   const handleEdit = (alarm) => {
     setEditingId(alarm.id);
@@ -64,123 +85,130 @@ function Alarms() {
     setTime(alarm.time.slice(0, 5));
     setAlarmType(alarm.alarm_type);
     setRingtone(alarm.ringtone || "classic");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id) => {
-  if (!window.confirm("Delete this alarm?")) return;
-  try {
-    await deleteAlarm(id);
-    toast.success("Alarm deleted");
-    loadAlarms();
-  } catch (err) {
-    toast.error("Could not delete alarm");
-  }
-};
-
-const handleToggleActive = async (alarm) => {
-  try {
-    await updateAlarm(alarm.id, { is_active: !alarm.is_active });
-    toast.success(alarm.is_active ? "Alarm turned off" : "Alarm turned on");
-    loadAlarms();
-  } catch (err) {
-    toast.error("Could not update alarm status");
-  }
-};
-
-const checkSuggestion = async (alarmId) => {
-  try {
-    const res = await getSmartScheduleSuggestion(alarmId);
-    if (res.data.has_suggestion) {
-      setSuggestions((prev) => ({ ...prev, [alarmId]: res.data }));
+    if (!window.confirm("Delete this alarm?")) return;
+    try {
+      await deleteAlarm(id);
+      toast.success("Alarm deleted");
+      loadAlarms();
+    } catch (err) {
+      toast.error("Could not delete alarm");
     }
-  } catch (err) {
-    // silently skip - not critical
-  }
-};
+  };
 
-const acceptSuggestion = async (alarmId, newTime) => {
-  try {
-    await updateAlarm(alarmId, { time: newTime + ":00" });
-    toast.success("Alarm time updated!");
-    setSuggestions((prev) => {
-      const copy = { ...prev };
-      delete copy[alarmId];
-      return copy;
-    });
-    loadAlarms();
-  } catch (err) {
-    toast.error("Could not update alarm");
-  }
-};
+  const handleToggleActive = async (alarm) => {
+    try {
+      await updateAlarm(alarm.id, { is_active: !alarm.is_active });
+      toast.success(alarm.is_active ? "Alarm turned off" : "Alarm turned on");
+      loadAlarms();
+    } catch (err) {
+      toast.error("Could not update alarm status");
+    }
+  };
 
+  const acceptSuggestion = async (alarmId, newTime) => {
+    try {
+      await updateAlarm(alarmId, { time: newTime + ":00" });
+      toast.success("Alarm time updated!");
+      setSuggestions((prev) => {
+        const copy = { ...prev };
+        delete copy[alarmId];
+        return copy;
+      });
+      loadAlarms();
+    } catch (err) {
+      toast.error("Could not update alarm");
+    }
+  };
 
+  const previewTone = (name) => {
+    if (isRinging() || getRingingAlarm()) return;
+    startRinging(name);
+    setTimeout(() => {
+      if (!getRingingAlarm()) stopRinging();
+    }, 1800);
+  };
+
+  const sorted = [...alarms].sort((a, b) => a.time.localeCompare(b.time));
+  const activeCount = alarms.filter((a) => a.is_active).length;
+  const upcoming = alarms
+    .map((a) => ({ a, at: nextRingDate(a) }))
+    .filter((x) => x.at)
+    .sort((x, y) => x.at - y.at)[0];
 
   return (
     <AppLayout>
       <div className="dashboard-content">
         <div className="dashboard-header">
-          <h1 className="dashboard-title">Your Alarms ⏰</h1>
+          <h1 className="dashboard-title">Your Alarms</h1>
           <p className="dashboard-subtitle">Create and manage your wake-up alarms</p>
         </div>
 
-        <form className="alarm-form" onSubmit={handleSubmit}>
-          <input
-            className="form-input"
-            type="text"
-            placeholder="Label (e.g. Gym)"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            required
-          />
-          <input
-            className="form-input"
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            required
-          />
-          <select
-            className="form-input"
-            value={alarmType}
-            onChange={(e) => setAlarmType(e.target.value)}
-          >
-            <option value="daily">Daily</option>
-            <option value="weekday">Weekday</option>
-            <option value="weekend">Weekend</option>
-            <option value="one_time">One-Time</option>
-            <option value="smart_adaptive">Smart Adaptive</option>
-          </select>
-          <select className="form-input" value={ringtone} onChange={(e) => setRingtone(e.target.value)}>
-            {RINGTONE_OPTIONS.map((r) => (
-              <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
-            ))}
-          </select>
-          <button className="btn-primary" type="submit" style={{ width: "auto", padding: "11px 22px" }}>
-            {editingId ? "Update Alarm" : "Add Alarm"}
-          </button>
-          {editingId && (
-            <button
-              type="button"
-              className="btn-logout"
-              onClick={resetForm}
-            >
-              Cancel
+        <div className="alarm-summary">
+          <div className="alarm-summary-item"><span className="alarm-summary-num">{alarms.length}</span> total</div>
+          <div className="alarm-summary-item"><span className="alarm-summary-num">{activeCount}</span> active</div>
+          <div className="alarm-summary-next">
+            {upcoming ? (
+              <>Next: <strong>{formatTime(upcoming.a.time)}</strong> · {upcoming.a.label} · {nextRingLabel(upcoming.a)}</>
+            ) : (
+              "No upcoming alarms"
+            )}
+          </div>
+        </div>
+
+        <form className="alarm-form-card" onSubmit={handleSubmit}>
+          <div className="alarm-form-title">{editingId ? "Edit alarm" : "New alarm"}</div>
+          <div className="alarm-form-grid">
+            <div className="form-group">
+              <label className="form-label">Label</label>
+              <input className="form-input" type="text" placeholder="e.g. Gym" value={label} onChange={(e) => setLabel(e.target.value)} required />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Time</label>
+              <TimePicker12 value={time} onChange={setTime} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Repeat</label>
+              <select className="form-input" value={alarmType} onChange={(e) => setAlarmType(e.target.value)}>
+                {TYPES.map(([value, text]) => <option key={value} value={value}>{text}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Ringtone</label>
+              <div className="ringtone-row">
+                <select className="form-input" value={ringtone} onChange={(e) => setRingtone(e.target.value)}>
+                  {RINGTONE_OPTIONS.map((r) => (
+                    <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
+                  ))}
+                </select>
+                <button type="button" className="btn-preview" onClick={() => previewTone(ringtone)} title="Preview sound">
+                  <Volume2 size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="alarm-form-actions">
+            <button className="btn-primary" type="submit" style={{ width: "auto", padding: "11px 26px", marginTop: 0 }}>
+              {editingId ? "Update Alarm" : "Add Alarm"}
             </button>
-          )}
+            {editingId && (
+              <button type="button" className="btn-logout" onClick={resetForm}>Cancel</button>
+            )}
+          </div>
         </form>
 
-
         <div className="alarm-list">
-          {alarms.length === 0 && (
-            <p className="dashboard-subtitle">No alarms yet — add your first one above.</p>
-          )}
-          {alarms.map((alarm) => (
+          {sorted.length === 0 && <p className="dashboard-subtitle">No alarms yet. Add your first one above.</p>}
+          {sorted.map((alarm) => (
             <div className={`alarm-item ${!alarm.is_active ? "alarm-inactive" : ""}`} key={alarm.id}>
               {suggestions[alarm.id] && (
                 <div className="smart-suggestion-banner">
                   <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-  <Lightbulb size={15} color="#6C56E8" /> Suggestion: ring at <strong>{suggestions[alarm.id].suggested_time}</strong> instead — {suggestions[alarm.id].reason}
-</span>
+                    <Lightbulb size={15} color="#6C56E8" /> Suggestion: ring at <strong>{formatTime(suggestions[alarm.id].suggested_time)}</strong> instead. {suggestions[alarm.id].reason}
+                  </span>
                   <button className="btn-edit" onClick={() => acceptSuggestion(alarm.id, suggestions[alarm.id].suggested_time)}>
                     Accept
                   </button>
@@ -189,11 +217,7 @@ const acceptSuggestion = async (alarmId, newTime) => {
               <div className="alarm-item-row">
                 <div className="alarm-item-left">
                   <label className="toggle-switch">
-                    <input
-                      type="checkbox"
-                      checked={alarm.is_active}
-                      onChange={() => handleToggleActive(alarm)}
-                    />
+                    <input type="checkbox" checked={alarm.is_active} onChange={() => handleToggleActive(alarm)} />
                     <span className="toggle-slider"></span>
                   </label>
                   <div>
@@ -201,10 +225,14 @@ const acceptSuggestion = async (alarmId, newTime) => {
                     <div className="alarm-meta">
                       {alarm.label} · <span className="alarm-type-badge">{SCHEDULE_LABELS[alarm.alarm_type] || alarm.alarm_type}</span> · {nextRingLabel(alarm)}
                     </div>
+                    <div className="week-dots">
+                      {WEEK.map(([letter, day], i) => (
+                        <span key={i} className={`wd ${ringsOnDay(alarm.alarm_type, day) ? "on" : ""}`}>{letter}</span>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <div className="alarm-actions">
-                  
                   <button className="btn-edit" onClick={() => handleEdit(alarm)}>Edit</button>
                   <button className="btn-delete" onClick={() => handleDelete(alarm.id)}>Delete</button>
                 </div>

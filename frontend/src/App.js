@@ -15,6 +15,7 @@ import HabitInsights from "./pages/HabitInsights";
 import Admin from "./pages/Admin";
 import CoachDashboard from "./pages/CoachDashboard";
 import CoachUserDetail from "./pages/CoachUserDetail";
+import Reports from "./pages/Reports";
 
 const MEMBER = ["user", "admin"];
 const COACH = ["wellness_coach"];
@@ -44,6 +45,7 @@ function App() {
           <Route path="/alarms" element={<ProtectedRoute roles={MEMBER}><Alarms /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute roles={MEMBER}><Profile /></ProtectedRoute>} />
           <Route path="/insights" element={<ProtectedRoute roles={MEMBER}><HabitInsights /></ProtectedRoute>} />
+          <Route path="/reports" element={<ProtectedRoute roles={MEMBER}><Reports /></ProtectedRoute>} />
           <Route path="/alarm-ring/:alarmId" element={<ProtectedRoute roles={MEMBER}><AlarmRing /></ProtectedRoute>} />
 
           <Route path="/admin" element={<ProtectedRoute roles={ADMIN}><Admin /></ProtectedRoute>} />

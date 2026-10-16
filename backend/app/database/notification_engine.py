@@ -6,6 +6,7 @@ from app.models.wakeup_log import WakeUpLog
 from app.database.habit_scoring import calculate_habit_score, calculate_daily_streak
 from app.database.ml_difficulty_model import calculate_engagement_status
 from app.database.alarm_schedule import rings_on_weekday
+from app.database.time_format import format_12h
 
 def already_notified_today(db, user_id, notif_type):
     today_start = datetime.combine(date.today(), datetime.min.time())
@@ -36,10 +37,11 @@ def check_bedtime_reminder(db, user):
 
     if abs(now_minutes - bedtime_minutes) <= 15:
         h, m = divmod(bedtime_minutes, 60)
+        wake_label = format_12h(user.preferred_wake_time.hour, user.preferred_wake_time.minute)
         create_notification(
             db, user.id, "bedtime",
             "Bedtime coming up",
-            f"To get {user.sleep_duration_hours}h of sleep before your {user.preferred_wake_time.strftime('%H:%M')} wake-up, aim to be in bed around {h:02d}:{m:02d}."
+            f"To get {user.sleep_duration_hours}h of sleep before your {wake_label} wake-up, aim to be in bed around {format_12h(h, m)}."
         )
 
 
@@ -64,7 +66,7 @@ def check_wakeup_reminder(db, user):
                 create_notification(
                     db, user.id, "wakeup",
                     "Alarm coming up",
-                    f"Your \"{alarm.label}\" alarm rings at {alarm.time.strftime('%H:%M')} — {diff} minutes from now."
+                    f"Your \"{alarm.label}\" alarm rings at {format_12h(alarm.time.hour, alarm.time.minute)}, {diff} minutes from now."
                 )
 
 

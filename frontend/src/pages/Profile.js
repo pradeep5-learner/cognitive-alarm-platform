@@ -3,6 +3,7 @@ import AppLayout from "../components/AppLayout";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
+import TimePicker12 from "../components/TimePicker12";
 
 function Profile() {
   const { login } = useAuth();
@@ -63,13 +64,7 @@ function Profile() {
         <form className="profile-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Preferred Wake-up Time</label>
-            <input
-              className="form-input"
-              type="time"
-              name="preferred_wake_time"
-              value={form.preferred_wake_time}
-              onChange={handleChange}
-            />
+            <TimePicker12 value={form.preferred_wake_time} onChange={(v) => setForm({ ...form, preferred_wake_time: v })} />
           </div>
 
           <div className="form-group">

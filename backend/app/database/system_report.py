@@ -40,7 +40,7 @@ def gather_system_report_data(db):
     role_counts = db.query(User.role, func.count(User.id)).group_by(User.role).all()
 
     return {
-        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "generated_at": datetime.now().strftime("%Y-%m-%d %I:%M %p"),
         "stats": compute_platform_stats(db),
         "roles": [{"role": r, "count": n} for r, n in role_counts],
         "activity": compute_activity_trend(db, 14),

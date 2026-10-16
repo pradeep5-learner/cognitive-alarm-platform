@@ -110,19 +110,11 @@ function AlarmRing() {
 
   // After a refresh the sound is gone. Restart it, and retry on the first click
   // because browsers block audio until the user interacts with the page.
-  useEffect(() => {
+    useEffect(() => {
     const ringing = getRingingAlarm();
-    if (!ringing || String(ringing.id) !== String(alarmId) || isRinging()) return;
-
-    startRinging(ringing.ringtone);
-    const retryOnClick = () => {
-      document.removeEventListener("click", retryOnClick);
-      if (!getRingingAlarm()) return;
-      stopRinging();
+    if (ringing && String(ringing.id) === String(alarmId) && !isRinging()) {
       startRinging(ringing.ringtone);
-    };
-    document.addEventListener("click", retryOnClick);
-    return () => document.removeEventListener("click", retryOnClick);
+    }
   }, [alarmId]);
 
   const handleSubmit = async (e) => {

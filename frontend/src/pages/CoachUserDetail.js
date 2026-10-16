@@ -9,11 +9,12 @@ import { ArrowLeft, TrendingUp, TrendingDown, Minus, FileText, FileSpreadsheet }
 import AppLayout from "../components/AppLayout";
 import { getAssignedUserDetails, downloadUserPdfReport, downloadUserExcelReport } from "../services/coachService";
 import { triggerDownload } from "../utils/downloadFile";
+import { formatTime } from "../utils/formatTime";
 
 const fmtMin = (m) => {
-  const h = Math.floor(m / 60) % 24;
-  const mm = Math.round(m % 60);
-  return `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+  const total = Math.round(m);
+  const h = Math.floor(total / 60) % 24;
+  return `${h % 12 || 12}:${String(total % 60).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
 };
 
 const shortDate = (d) => d.slice(5);
@@ -78,7 +79,7 @@ function CoachUserDetail() {
           <h1 className="dashboard-title">{profile.name}</h1>
           <p className="dashboard-subtitle">{profile.email}</p>
           <div className="detail-meta">
-            {profile.preferred_wake_time && <span className="detail-chip">Target wake-up {profile.preferred_wake_time}</span>}
+            {profile.preferred_wake_time && <span className="detail-chip">Target wake-up {formatTime(profile.preferred_wake_time)}</span>}
             {profile.sleep_duration_hours && <span className="detail-chip">Plans {profile.sleep_duration_hours}h sleep</span>}
             {profile.difficulty_preference && <span className="detail-chip">Prefers {profile.difficulty_preference}</span>}
             {profile.productivity_goal && <span className="detail-chip">Goal: {profile.productivity_goal}</span>}
@@ -196,7 +197,7 @@ function CoachUserDetail() {
               <LineChart data={wake_time_trend.points}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#EEF2FF" />
                 <XAxis dataKey="date" tickFormatter={shortDate} tick={{ fontSize: 11 }} />
-                <YAxis tickFormatter={fmtMin} domain={["auto", "auto"]} tick={{ fontSize: 11 }} width={50} />
+                <YAxis tickFormatter={fmtMin} domain={["auto", "auto"]} tick={{ fontSize: 11 }} width={72} />
                 <Tooltip formatter={(v) => fmtMin(v)} />
                 {wake_time_trend.target_minutes !== null && (
                   <ReferenceLine y={wake_time_trend.target_minutes} stroke="#2F9E8F" strokeDasharray="5 4" label={{ value: "Target", fontSize: 11, fill: "#2F9E8F" }} />
@@ -274,7 +275,7 @@ function CoachUserDetail() {
           {recent_sessions.length === 0 && <div className="session-row"><div>No sessions yet.</div></div>}
           {recent_sessions.map((s, i) => (
             <div className="session-row" key={i}>
-              <div>{new Date(s.started_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+              <div>{new Date(s.started_at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", hour12: true })}</div>
               <div>{s.alarm_label}</div>
               <div style={{ textTransform: "capitalize" }}>{s.challenge_type.replace("_", " ")}</div>
               <div>{s.attempts}</div>

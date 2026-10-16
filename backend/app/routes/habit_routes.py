@@ -7,6 +7,7 @@ from app.database.habit_scoring import calculate_habit_score, calculate_daily_st
 from app.models.user import User
 from app.models.habit_score import HabitScoreLog
 from app.schemas.habit_score_schema import HabitScoreResponse, HabitScoreHistoryItem, DailyStreakResponse
+from app.database.goal_tracking import calculate_week_overview
 
 router = APIRouter(prefix="/habits", tags=["Habit Scoring"])
 
@@ -45,3 +46,7 @@ def get_habit_score_history(db: Session = Depends(get_db), current_user: User = 
 @router.get("/streak", response_model=DailyStreakResponse)
 def get_daily_streak(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return calculate_daily_streak(db, current_user.id)
+
+@router.get("/week")
+def get_week_overview(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return calculate_week_overview(db, current_user)
