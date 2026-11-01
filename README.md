@@ -2,7 +2,7 @@
 
 <img src="docs/images/banner.png" alt="Dawn: Intelligent Cognitive Alarm Platform" width="100%">
 
-# Intelligent Cognitive Alarm Platform
+# AI Powered Adaptive Intelligent Cognitive Alarm Platform
 
 **An alarm that makes you think before you can go back to sleep, and learns from every morning.**
 
