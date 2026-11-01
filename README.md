@@ -14,7 +14,7 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-E8604C?style=flat-square&logo=docker&logoColor=white)
 ![Tests](https://img.shields.io/badge/tests-51%20passing-2A8F83?style=flat-square)
 
-[Live demo](https://YOUR-SITE.onrender.com) &nbsp;|&nbsp; [API docs](https://YOUR-BACKEND.onrender.com/docs) &nbsp;|&nbsp; [Report a bug](https://github.com/pradeep5-learner/cognitive-alarm-platform/issues)
+[Live demo](https://cognitive-alarm-platform-1.onrender.com) &nbsp;|&nbsp; [API docs](https://cognitive-alarm-platform.onrender.com/docs) &nbsp;|&nbsp; [Report a bug](https://github.com/pradeep5-learner/cognitive-alarm-platform/issues)
 
 <sub>The demo runs on free hosting, so the first load after a quiet period can take about a minute to wake up.</sub>
 
@@ -88,8 +88,6 @@ It was built for the **Infosys Springboard 7.0 virtual internship** as a complet
 - Docker Compose with a health check, request logging and database indexes created at start-up.
 
 ## Screenshots
-
-> Replace the placeholder images in [`docs/screenshots/`](docs/screenshots) with your own, keeping the same file names. A 1280 x 720 capture works well.
 
 <table>
   <tr>
@@ -440,15 +438,6 @@ Register from the sign-up page and pick a user type. **User** and **Wellness Coa
 | `REACT_APP_API_URL` | Front-end build | Address of the API |
 | `DB_PASSWORD` | Docker Compose | Database password |
 
-Example `backend/.env`:
-
-```
-DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/cognitive_alarm_db
-SECRET_KEY=change-me-to-a-long-random-string
-ADMIN_SIGNUP_CODE=choose-a-code
-```
-
-Never commit real secrets. `.env` files are ignored by Git.
 
 ## API overview
 
